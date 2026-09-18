@@ -10,10 +10,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private AudioSource thrustAudioSource;
     [SerializeField] private ParticleSystem thrustParticles;
 
+    [Header("Wrapping Offset")]
+    [Tooltip("Extra padding to allow full sprite clearance off-screen before wrapping.")]
+    [SerializeField] private float wrapPadding = 0.5f;
+
     private Rigidbody2D rb;
     private Camera mainCamera;
 
-    // Cached input values captured during frame updates
     private float moveInput;
     private float turnInput;
 
@@ -22,29 +25,23 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         mainCamera = Camera.main;
 
-        // Apply initial physics properties specified in our ScriptableObject asset
         ApplyConfigSettings();
     }
 
-    /* Assigns physical properties like drag directly from the config asset onto the Rigidbody2D.
-     * This avoids hardcoding physics behaviors directly inside code.
-     */
     private void ApplyConfigSettings()
     {
         if (shipConfig == null) return;
 
         rb.linearDamping = shipConfig.LinearDrag;
-        rb.angularDamping = 0.5f;
+        rb.angularDamping = 0f; // Disables physics resistance for manual rotation
     }
 
     private void Update()
     {
-        /* Read player inputs in standard Update to prevent input dropping.
-         * Axis values are captured here and processed during FixedUpdate physics passes.
-         */
         moveInput = Input.GetAxis("Vertical");
         turnInput = Input.GetAxis("Horizontal");
 
+        HandleRotation();
         HandleThrustEffects();
         WrapScreen();
     }
@@ -53,41 +50,42 @@ public class PlayerController : MonoBehaviour
     {
         if (shipConfig == null) return;
 
-        // FixedUpdate handles physical time integration automatically; omit Time.fixedDeltaTime in forces
-        if (turnInput != 0)
-        {
-            rb.AddTorque(-turnInput * shipConfig.RotationSpeed);
-        }
+        // Linear acceleration along local forward/up axis
         if (moveInput > 0)
         {
             rb.AddForce(transform.up * (shipConfig.ThrustForce * moveInput));
         }
 
-        // Clamp total linear velocity so force application cannot accelerate ship past MaxSpeed setting
+        // Clamp total linear velocity
         if (rb.linearVelocity.magnitude > shipConfig.MaxSpeed)
         {
             rb.linearVelocity = rb.linearVelocity.normalized * shipConfig.MaxSpeed;
         }
     }
 
-    /* Manages audio loops and particle emissions based on player thrust input.
-     * Toggling existing components avoids Garbage Collector overhead associated with runtime Instantiate calls.
+    /* Snaps rotation directly to transform rather than applying torque physics.
+     * This mimics responsive arcade steering controls.
      */
+    private void HandleRotation()
+    {
+        if (shipConfig == null || turnInput == 0) return;
+
+        float rotationAmount = -turnInput * shipConfig.RotationSpeed * Time.deltaTime;
+        transform.Rotate(0, 0, rotationAmount);
+    }
+
     private void HandleThrustEffects()
     {
         bool isThrusting = moveInput > 0;
 
-        // Toggle particle emission
         if (thrustParticles != null)
         {
             var emission = thrustParticles.emission;
             emission.enabled = isThrusting;
         }
 
-        // Smoothly fade audio volume up/down
         if (thrustAudioSource != null)
         {
-            // Ensure audio source is active and looping
             if (!thrustAudioSource.isPlaying)
             {
                 thrustAudioSource.loop = true;
@@ -106,23 +104,27 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    /* Converts world position into normalized viewport coordinates (0.0 to 1.0 range).
-     * Automatically wraps the player to the opposite side whenever they cross screen boundaries.
+    /* Converts world position into viewport space with padding to wrap only after the entire sprite leaves screen view.
      */
     private void WrapScreen()
     {
         Vector3 position = transform.position;
         Vector3 viewportPos = mainCamera.WorldToViewportPoint(position);
 
-        // Horizontal screen wrap
-        if (viewportPos.x > 1) viewportPos.x = 0;
-        else if (viewportPos.x < 0) viewportPos.x = 1;
+        // Convert world padding into viewport distance
+        Vector3 rightEdgeWorld = mainCamera.ViewportToWorldPoint(new Vector3(1, 0, mainCamera.nearClipPlane));
+        Vector3 leftEdgeWorld = mainCamera.ViewportToWorldPoint(new Vector3(0, 0, mainCamera.nearClipPlane));
+        float screenWidthInWorld = rightEdgeWorld.x - leftEdgeWorld.x;
+        float viewportPadding = wrapPadding / screenWidthInWorld;
 
-        // Vertical screen wrap
-        if (viewportPos.y > 1) viewportPos.y = 0;
-        else if (viewportPos.y < 0) viewportPos.y = 1;
+        // Horizontal screen wrap with padding
+        if (viewportPos.x > 1 + viewportPadding) viewportPos.x = 0 - viewportPadding;
+        else if (viewportPos.x < 0 - viewportPadding) viewportPos.x = 1 + viewportPadding;
 
-        // Maintain original world Z position so the camera doesn't lose sight of the transform
+        // Vertical screen wrap with padding
+        if (viewportPos.y > 1 + viewportPadding) viewportPos.y = 0 - viewportPadding;
+        else if (viewportPos.y < 0 - viewportPadding) viewportPos.y = 1 + viewportPadding;
+
         viewportPos.z = mainCamera.WorldToViewportPoint(transform.position).z;
         transform.position = mainCamera.ViewportToWorldPoint(viewportPos);
     }
