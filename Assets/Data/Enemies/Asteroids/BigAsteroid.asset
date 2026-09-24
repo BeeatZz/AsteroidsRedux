@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: BigAsteroid
   m_EditorClassIdentifier: 
   scoreValue: 100
+  health: 1
   moveSpeed: 3
   minRotationSpeed: 20
   maxRotationSpeed: 100
-  nextSizePrefab: {fileID: 0}
+  nextSizePrefab: {fileID: 2233352670642069160, guid: 2a63f5cc37114dc1bc2c61b9a0d68f36, type: 3}
   spawnCountOnDestroy: 2
