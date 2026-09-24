@@ -40,7 +40,9 @@ namespace Asteroids.Player
 
         private void TryShoot()
         {
-            if (weaponConfig == null || Time.time < nextFireTime) return;
+            // Update still runs while Time.timeScale is 0 (paused/game over), and Time.time freezes
+            // with it, so the cooldown check alone can't block fire input during a pause.
+            if (Time.timeScale <= 0f || weaponConfig == null || Time.time < nextFireTime) return;
 
             nextFireTime = Time.time + weaponConfig.FireRate;
 
