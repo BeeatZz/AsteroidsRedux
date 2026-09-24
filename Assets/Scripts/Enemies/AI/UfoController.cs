@@ -96,13 +96,7 @@ namespace Asteroids.Enemies.AI
         {
             if (collision.CompareTag("Bullet"))
             {
-                int incomingDamage = collision.TryGetComponent<Bullet>(out var bullet) ? bullet.Damage : 1;
-
-                if (collision.TryGetComponent<PooledObject>(out var bulletPoolable) && !string.IsNullOrEmpty(bulletPoolable.PoolKey))
-                {
-                    bulletPoolable.ReturnToPool();
-                }
-
+                int incomingDamage = collision.TryGetComponent<Bullet>(out var bullet) ? bullet.ResolveHit() : 1;
                 TakeDamage(incomingDamage);
             }
         }
@@ -121,6 +115,11 @@ namespace Asteroids.Enemies.AI
             if (awardScore && onScoreAddedChannel != null && config != null)
             {
                 onScoreAddedChannel.RaiseEvent(config.ScoreValue);
+            }
+
+            if (config != null && config.DestroyEffect != null)
+            {
+                config.DestroyEffect.Play(transform.position);
             }
 
             if (pooledObject != null && !string.IsNullOrEmpty(pooledObject.PoolKey))

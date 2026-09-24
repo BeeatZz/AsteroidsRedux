@@ -1,4 +1,5 @@
 using UnityEngine;
+using Asteroids.Effects;
 
 namespace Asteroids.ScriptableObjects
 {
@@ -16,6 +17,9 @@ namespace Asteroids.ScriptableObjects
         [SerializeField] private GameObject nextSizePrefab;
         [SerializeField] private int spawnCountOnDestroy = 2;
 
+        [Header("Effects")]
+        [SerializeField] private EffectSO destroyEffect;
+
         public int ScoreValue => scoreValue;
         public int Health => health;
         public float MoveSpeed => moveSpeed;
@@ -23,5 +27,6 @@ namespace Asteroids.ScriptableObjects
         public float MaxRotationSpeed => maxRotationSpeed;
         public GameObject NextSizePrefab => nextSizePrefab;
         public int SpawnCountOnDestroy => spawnCountOnDestroy;
+        public EffectSO DestroyEffect => destroyEffect;
     }
 }

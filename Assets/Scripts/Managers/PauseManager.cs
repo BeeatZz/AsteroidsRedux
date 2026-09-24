@@ -26,6 +26,9 @@ namespace Asteroids.Managers
                 return;
             }
             Instance = this;
+
+            // AudioListener.pause is global and survives scene loads, so a restart must clear it.
+            AudioListener.pause = false;
         }
 
         private void OnEnable()
@@ -67,6 +70,10 @@ namespace Asteroids.Managers
 
             IsPaused = true;
             Time.timeScale = 0f;
+
+            // timeScale doesn't stop audio. This pauses every source except those with
+            // ignoreListenerPause set (UISoundPlayer, and MusicPlayer by default).
+            AudioListener.pause = true;
             onGamePausedChannel?.RaiseEvent();
         }
 
@@ -76,6 +83,7 @@ namespace Asteroids.Managers
 
             IsPaused = false;
             Time.timeScale = 1f;
+            AudioListener.pause = false;
             onGameResumedChannel?.RaiseEvent();
         }
     }

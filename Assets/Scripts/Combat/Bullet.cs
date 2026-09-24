@@ -1,5 +1,6 @@
 using UnityEngine;
 using Asteroids.Pooling;
+using Asteroids.Effects;
 
 namespace Asteroids.Combat
 {
@@ -13,6 +14,8 @@ namespace Asteroids.Combat
 
         [Header("Visual Effects")]
         [SerializeField] private TrailRenderer trailRenderer;
+        [Tooltip("Plays where the bullet hits something. Not played when it simply expires.")]
+        [SerializeField] private EffectSO impactEffect;
 
         private Rigidbody2D rb;
         private PooledObject pooledObject;
@@ -62,6 +65,23 @@ namespace Asteroids.Combat
             {
                 rb.linearVelocity = transform.up * currentSpeed;
             }
+        }
+
+        // Called by whatever the bullet hit: plays the impact effect, recycles the bullet
+        // and returns the damage it deals.
+        public int ResolveHit()
+        {
+            if (impactEffect != null)
+            {
+                impactEffect.Play(transform.position);
+            }
+
+            if (!string.IsNullOrEmpty(pooledObject.PoolKey))
+            {
+                pooledObject.ReturnToPool();
+            }
+
+            return currentDamage;
         }
 
         public void OnReturnToPool()

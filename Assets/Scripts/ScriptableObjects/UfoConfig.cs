@@ -1,4 +1,5 @@
 using UnityEngine;
+using Asteroids.Effects;
 
 namespace Asteroids.ScriptableObjects
 {
@@ -17,11 +18,15 @@ namespace Asteroids.ScriptableObjects
         [Header("Audio Parameters")]
         [SerializeField] private float maxAudioDistance = 0.5f;
 
+        [Header("Effects")]
+        [SerializeField] private EffectSO destroyEffect;
+
         public float MoveSpeed => moveSpeed;
         public float ScreenPadding => screenPadding;
         public float FireRate => fireRate;
         public int ScoreValue => scoreValue;
         public int Health => health;
         public float MaxAudioDistance => maxAudioDistance;
+        public EffectSO DestroyEffect => destroyEffect;
     }
 }

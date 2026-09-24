@@ -59,13 +59,7 @@ namespace Asteroids.Enemies
         {
             if (collision.CompareTag("Bullet"))
             {
-                int incomingDamage = collision.TryGetComponent<Bullet>(out var bullet) ? bullet.Damage : 1;
-
-                if (collision.TryGetComponent<PooledObject>(out var bulletPoolable))
-                {
-                    bulletPoolable.ReturnToPool();
-                }
-
+                int incomingDamage = collision.TryGetComponent<Bullet>(out var bullet) ? bullet.ResolveHit() : 1;
                 TakeDamage(incomingDamage);
             }
         }
@@ -94,6 +88,12 @@ namespace Asteroids.Enemies
                 {
                     ObjectPool.Instance.Get(config.NextSizePrefab, transform.position, Quaternion.identity);
                 }
+            }
+
+            // Unlike splitting, the explosion plays for ramming kills too.
+            if (config != null && config.DestroyEffect != null)
+            {
+                config.DestroyEffect.Play(transform.position);
             }
 
             pooledObject.ReturnToPool();

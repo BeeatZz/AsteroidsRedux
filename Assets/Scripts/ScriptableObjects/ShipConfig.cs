@@ -1,4 +1,5 @@
 using UnityEngine;
+using Asteroids.Effects;
 
 namespace Asteroids.ScriptableObjects
 {
@@ -26,11 +27,31 @@ namespace Asteroids.ScriptableObjects
         [Tooltip("Drag applied when not thrusting.")]
         [SerializeField] private float linearDrag = 0.5f;
 
+        [Header("Hyperspace Settings")]
+        [Tooltip("How long the ship is gone before reappearing, in seconds.")]
+        [SerializeField] private float hyperspaceDuration = 0.5f;
+
+        [Tooltip("Minimum time between hyperspace jumps, in seconds.")]
+        [SerializeField] private float hyperspaceCooldown = 1.5f;
+
+        [Tooltip("Chance (0-1) that re-entry fails and destroys the ship, as in the original arcade game.")]
+        [Range(0f, 1f)]
+        [SerializeField] private float hyperspaceFailChance = 0.1f;
+
+        [Tooltip("Re-entry tries to avoid landing within this distance of an enemy.")]
+        [SerializeField] private float hyperspaceSafeRadius = 1.5f;
+
         [Header("Visuals & Audio")]
         [SerializeField] private GameObject thrustParticlesPrefab;
-        [SerializeField] private GameObject explosionParticlesPrefab;
         [SerializeField] private AudioClip thrustAudioClip;
-        [SerializeField] private AudioClip deathAudioClip;
+
+        [Header("Effects")]
+        [SerializeField] private EffectSO deathEffect;
+        [SerializeField] private EffectSO respawnEffect;
+        [Tooltip("Plays where the ship vanishes.")]
+        [SerializeField] private EffectSO hyperspaceExitEffect;
+        [Tooltip("Plays where the ship reappears.")]
+        [SerializeField] private EffectSO hyperspaceEnterEffect;
 
         [Header("Audio Tuning")]
         [SerializeField] private float audioFadeSpeed = 5f;
@@ -42,9 +63,17 @@ namespace Asteroids.ScriptableObjects
         public float MaxSpeed => maxSpeed;
         public float LinearDrag => linearDrag;
 
+        public float HyperspaceDuration => hyperspaceDuration;
+        public float HyperspaceCooldown => hyperspaceCooldown;
+        public float HyperspaceFailChance => hyperspaceFailChance;
+        public float HyperspaceSafeRadius => hyperspaceSafeRadius;
+
         public GameObject ThrustParticlesPrefab => thrustParticlesPrefab;
-        public GameObject ExplosionParticlesPrefab => explosionParticlesPrefab;
         public AudioClip ThrustAudioClip => thrustAudioClip;
-        public AudioClip DeathAudioClip => deathAudioClip;
+
+        public EffectSO DeathEffect => deathEffect;
+        public EffectSO RespawnEffect => respawnEffect;
+        public EffectSO HyperspaceExitEffect => hyperspaceExitEffect;
+        public EffectSO HyperspaceEnterEffect => hyperspaceEnterEffect;
     }
 }
