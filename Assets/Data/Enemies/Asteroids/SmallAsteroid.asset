@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: af9e0b1a47a842446be24664da838399, type: 3}
-  m_Name: MediumAsteroid
-  m_EditorClassIdentifier: 
-  scoreValue: 150
+  m_Name: SmallAsteroid
+  m_EditorClassIdentifier:
+  scoreValue: 200
   health: 1
-  moveSpeed: 4.5
-  minRotationSpeed: 20
-  maxRotationSpeed: 100
-  nextSizePrefab: {fileID: 7536401101024097454, guid: ba50550d54fb463f84a5ba6438142730, type: 3}
+  moveSpeed: 6.5
+  minRotationSpeed: 40
+  maxRotationSpeed: 160
+  nextSizePrefab: {fileID: 0}
   spawnCountOnDestroy: 2
