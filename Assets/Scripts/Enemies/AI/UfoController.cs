@@ -30,6 +30,7 @@ namespace Asteroids.Enemies.AI
         private Transform playerTransform;
         private Camera mainCamera;
         private int currentHealth;
+        private float? fireRateOverride;
 
         public StateMachine StateMachine { get; private set; }
         public UfoEntryState EntryState { get; private set; }
@@ -37,7 +38,14 @@ namespace Asteroids.Enemies.AI
 
         public UfoConfigSO Config => config;
         public float MoveSpeed => config != null ? config.MoveSpeed : 3.5f;
-        public float FireRate => config != null ? config.FireRate : 1.8f;
+        public float FireRate => fireRateOverride ?? (config != null ? config.FireRate : 1.8f);
+
+        // Lets a spawner (e.g. WaveManager) ramp difficulty per-wave without needing
+        // a separate config asset per wave; null falls back to the shared config value.
+        public void SetFireRate(float fireRate)
+        {
+            fireRateOverride = fireRate;
+        }
 
         private void Awake()
         {
@@ -70,6 +78,7 @@ namespace Asteroids.Enemies.AI
         {
             if (rb != null) rb.linearVelocity = Vector2.zero;
             if (engineAudioSource != null) engineAudioSource.Stop();
+            fireRateOverride = null;
         }
 
         private void Update()
