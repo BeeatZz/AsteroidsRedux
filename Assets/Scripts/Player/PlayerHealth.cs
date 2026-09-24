@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using Asteroids.Events;
 using Asteroids.Pooling;
@@ -12,6 +13,37 @@ namespace Asteroids.Player
 
         [Header("Event Channels")]
         [SerializeField] private VoidEventChannelSO onPlayerDiedChannel;
+
+        [Header("Respawn Invincibility")]
+        [SerializeField] private float invincibilityDuration = 2f;
+        [SerializeField] private float blinkInterval = 0.1f;
+        [SerializeField] private SpriteRenderer spriteRenderer;
+
+        private bool isInvincible;
+        private Coroutine invincibilityRoutine;
+
+        private void Awake()
+        {
+            if (spriteRenderer == null)
+            {
+                spriteRenderer = GetComponent<SpriteRenderer>();
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (invincibilityRoutine != null)
+            {
+                StopCoroutine(invincibilityRoutine);
+                invincibilityRoutine = null;
+            }
+
+            isInvincible = false;
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.enabled = true;
+            }
+        }
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
@@ -40,6 +72,8 @@ namespace Asteroids.Player
 
         public void TakeDamage(int amount, bool awardScore = true)
         {
+            if (isInvincible) return;
+
             Die();
         }
 
@@ -51,6 +85,42 @@ namespace Asteroids.Player
             }
 
             gameObject.SetActive(false);
+        }
+
+        // Called by GameManager once the ship is repositioned and reactivated after a respawn.
+        public void BeginInvincibility()
+        {
+            if (invincibilityRoutine != null)
+            {
+                StopCoroutine(invincibilityRoutine);
+            }
+
+            invincibilityRoutine = StartCoroutine(InvincibilityRoutine());
+        }
+
+        private IEnumerator InvincibilityRoutine()
+        {
+            isInvincible = true;
+
+            float elapsed = 0f;
+            while (elapsed < invincibilityDuration)
+            {
+                if (spriteRenderer != null)
+                {
+                    spriteRenderer.enabled = !spriteRenderer.enabled;
+                }
+
+                yield return new WaitForSeconds(blinkInterval);
+                elapsed += blinkInterval;
+            }
+
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.enabled = true;
+            }
+
+            isInvincible = false;
+            invincibilityRoutine = null;
         }
     }
 }
