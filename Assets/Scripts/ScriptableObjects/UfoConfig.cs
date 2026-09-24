@@ -12,6 +12,7 @@ namespace Asteroids.ScriptableObjects
         [Header("Combat Stats")]
         [SerializeField] private float fireRate = 1.8f;
         [SerializeField] private int scoreValue = 200;
+        [SerializeField] private int health = 3;
 
         [Header("Audio Parameters")]
         [SerializeField] private float maxAudioDistance = 0.5f;
@@ -20,6 +21,7 @@ namespace Asteroids.ScriptableObjects
         public float ScreenPadding => screenPadding;
         public float FireRate => fireRate;
         public int ScoreValue => scoreValue;
+        public int Health => health;
         public float MaxAudioDistance => maxAudioDistance;
     }
 }

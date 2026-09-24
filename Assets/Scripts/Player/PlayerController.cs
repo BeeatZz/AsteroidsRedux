@@ -1,4 +1,7 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
+using Asteroids.ScriptableObjects;
+using Asteroids.Utility;
 
 namespace Asteroids.Player
 {
@@ -40,8 +43,7 @@ namespace Asteroids.Player
 
         private void Update()
         {
-            moveInput = Input.GetAxis("Vertical");
-            turnInput = Input.GetAxis("Horizontal");
+            ReadInput();
 
             HandleRotation();
             HandleThrustEffects();
@@ -63,6 +65,23 @@ namespace Asteroids.Player
             {
                 rb.linearVelocity = rb.linearVelocity.normalized * shipConfig.MaxSpeed;
             }
+        }
+
+        private void ReadInput()
+        {
+            var keyboard = Keyboard.current;
+            if (keyboard == null)
+            {
+                moveInput = 0f;
+                turnInput = 0f;
+                return;
+            }
+
+            moveInput = (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed) ? 1f : 0f;
+
+            turnInput = 0f;
+            if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed) turnInput = -1f;
+            if (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed) turnInput = 1f;
         }
 
         /* Snaps rotation directly to transform rather than applying torque physics.
@@ -110,25 +129,7 @@ namespace Asteroids.Player
          */
         private void WrapScreen()
         {
-            Vector3 position = transform.position;
-            Vector3 viewportPos = mainCamera.WorldToViewportPoint(position);
-
-            // Convert world padding into viewport distance
-            Vector3 rightEdgeWorld = mainCamera.ViewportToWorldPoint(new Vector3(1, 0, mainCamera.nearClipPlane));
-            Vector3 leftEdgeWorld = mainCamera.ViewportToWorldPoint(new Vector3(0, 0, mainCamera.nearClipPlane));
-            float screenWidthInWorld = rightEdgeWorld.x - leftEdgeWorld.x;
-            float viewportPadding = wrapPadding / screenWidthInWorld;
-
-            // Horizontal screen wrap with padding
-            if (viewportPos.x > 1 + viewportPadding) viewportPos.x = 0 - viewportPadding;
-            else if (viewportPos.x < 0 - viewportPadding) viewportPos.x = 1 + viewportPadding;
-
-            // Vertical screen wrap with padding
-            if (viewportPos.y > 1 + viewportPadding) viewportPos.y = 0 - viewportPadding;
-            else if (viewportPos.y < 0 - viewportPadding) viewportPos.y = 1 + viewportPadding;
-
-            viewportPos.z = mainCamera.WorldToViewportPoint(transform.position).z;
-            transform.position = mainCamera.ViewportToWorldPoint(viewportPos);
+            ScreenWrapper.WrapWithWorldPadding(transform, mainCamera, wrapPadding);
         }
     }
 }

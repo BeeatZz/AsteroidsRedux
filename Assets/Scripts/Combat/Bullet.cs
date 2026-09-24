@@ -9,6 +9,7 @@ namespace Asteroids.Combat
         [Header("Default Speed Settings")]
         [SerializeField] private float defaultSpeed = 12f;
         [SerializeField] private float defaultLifetime = 3f;
+        [SerializeField] private int defaultDamage = 1;
 
         [Header("Visual Effects")]
         [SerializeField] private TrailRenderer trailRenderer;
@@ -18,6 +19,9 @@ namespace Asteroids.Combat
         private float currentLifetime;
         private float maxLifetime;
         private float currentSpeed;
+        private int currentDamage;
+
+        public int Damage => currentDamage;
 
         private void Awake()
         {
@@ -35,6 +39,7 @@ namespace Asteroids.Combat
             currentLifetime = 0f;
             maxLifetime = defaultLifetime;
             currentSpeed = defaultSpeed;
+            currentDamage = defaultDamage;
 
             if (rb != null)
             {
@@ -47,10 +52,11 @@ namespace Asteroids.Combat
             }
         }
 
-        public void Initialize(float speed, float lifetime)
+        public void Initialize(float speed, float lifetime, int damage)
         {
             maxLifetime = lifetime;
             currentSpeed = speed;
+            currentDamage = damage;
 
             if (rb != null)
             {

@@ -2,12 +2,16 @@ using UnityEngine;
 using Asteroids.Events;
 using Asteroids.ScriptableObjects;
 using Asteroids.Pooling;
+using Asteroids.Combat;
+using Asteroids.Utility;
 
 namespace Asteroids.Enemies
 {
     [RequireComponent(typeof(Rigidbody2D), typeof(PooledObject))]
-    public class Asteroid : MonoBehaviour, IPoolable
+    public class Asteroid : MonoBehaviour, IPoolable, IDamageable
     {
+        private const float ScreenPadding = 0.05f;
+
         [Header("Config")]
         [SerializeField] private AsteroidConfig config;
 
@@ -18,6 +22,7 @@ namespace Asteroids.Enemies
         private PooledObject pooledObject;
         private Camera mainCamera;
         private float rotSpeed;
+        private int currentHealth;
 
         private void Awake()
         {
@@ -28,6 +33,8 @@ namespace Asteroids.Enemies
 
         public void OnSpawnFromPool()
         {
+            currentHealth = config != null ? config.Health : 1;
+
             if (config != null)
             {
                 Vector2 randomDirection = Random.insideUnitCircle.normalized;
@@ -52,23 +59,36 @@ namespace Asteroids.Enemies
         {
             if (collision.CompareTag("Bullet"))
             {
+                int incomingDamage = collision.TryGetComponent<Bullet>(out var bullet) ? bullet.Damage : 1;
+
                 if (collision.TryGetComponent<PooledObject>(out var bulletPoolable))
                 {
                     bulletPoolable.ReturnToPool();
                 }
 
-                DestroyAsteroid();
+                TakeDamage(incomingDamage);
             }
         }
 
-        private void DestroyAsteroid()
+        public void TakeDamage(int amount, bool awardScore = true)
         {
-            if (onScoreAddedChannel != null && config != null)
+            currentHealth -= amount;
+            if (currentHealth <= 0)
+            {
+                DestroyAsteroid(awardScore);
+            }
+        }
+
+        // awardScore also gates splitting: a ramming kill destroys the asteroid outright,
+        // it doesn't fragment it or reward the player, unlike a weapon kill.
+        private void DestroyAsteroid(bool awardScore)
+        {
+            if (awardScore && onScoreAddedChannel != null && config != null)
             {
                 onScoreAddedChannel.RaiseEvent(config.ScoreValue);
             }
 
-            if (config != null && config.NextSizePrefab != null && ObjectPool.Instance != null)
+            if (awardScore && config != null && config.NextSizePrefab != null && ObjectPool.Instance != null)
             {
                 for (int i = 0; i < config.SpawnCountOnDestroy; i++)
                 {
@@ -81,18 +101,7 @@ namespace Asteroids.Enemies
 
         private void WrapScreen()
         {
-            if (mainCamera == null) return;
-
-            Vector3 viewportPos = mainCamera.WorldToViewportPoint(transform.position);
-
-            if (viewportPos.x > 1.05f) viewportPos.x = -0.05f;
-            else if (viewportPos.x < -0.05f) viewportPos.x = 1.05f;
-
-            if (viewportPos.y > 1.05f) viewportPos.y = -0.05f;
-            else if (viewportPos.y < -0.05f) viewportPos.y = 1.05f;
-
-            viewportPos.z = mainCamera.WorldToViewportPoint(transform.position).z;
-            transform.position = mainCamera.ViewportToWorldPoint(viewportPos);
+            ScreenWrapper.Wrap(transform, mainCamera, ScreenPadding);
         }
     }
 }
