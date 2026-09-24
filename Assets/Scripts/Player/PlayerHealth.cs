@@ -1,8 +1,8 @@
 using System.Collections;
 using UnityEngine;
 using Asteroids.Events;
-using Asteroids.Pooling;
 using Asteroids.Combat;
+using Asteroids.ScriptableObjects;
 
 namespace Asteroids.Player
 {
@@ -10,6 +10,9 @@ namespace Asteroids.Player
     {
         // Contact with an enemy is always lethal to both sides, regardless of the enemy's remaining health.
         private const int RammingDamage = 9999;
+
+        [Header("Data Config")]
+        [SerializeField] private ShipConfig shipConfig;
 
         [Header("Event Channels")]
         [SerializeField] private VoidEventChannelSO onPlayerDiedChannel;
@@ -21,6 +24,9 @@ namespace Asteroids.Player
 
         private bool isInvincible;
         private Coroutine invincibilityRoutine;
+
+        // Set while the ship is in hyperspace; the blink routine must not make it visible.
+        private bool isHidden;
 
         private void Awake()
         {
@@ -39,9 +45,20 @@ namespace Asteroids.Player
             }
 
             isInvincible = false;
+            isHidden = false;
             if (spriteRenderer != null)
             {
                 spriteRenderer.enabled = true;
+            }
+        }
+
+        // Called by PlayerHyperspace; wins over the invincibility blink while set.
+        public void SetHidden(bool hidden)
+        {
+            isHidden = hidden;
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.enabled = !hidden;
             }
         }
 
@@ -49,13 +66,7 @@ namespace Asteroids.Player
         {
             if (collision.CompareTag("EnemyBullet"))
             {
-                int incomingDamage = collision.TryGetComponent<Bullet>(out var bullet) ? bullet.Damage : 1;
-
-                if (collision.TryGetComponent<PooledObject>(out var poolable))
-                {
-                    poolable.ReturnToPool();
-                }
-
+                int incomingDamage = collision.TryGetComponent<Bullet>(out var bullet) ? bullet.ResolveHit() : 1;
                 TakeDamage(incomingDamage);
             }
             else if (collision.CompareTag("Enemy"))
@@ -79,6 +90,11 @@ namespace Asteroids.Player
 
         public void Die()
         {
+            if (shipConfig != null && shipConfig.DeathEffect != null)
+            {
+                shipConfig.DeathEffect.Play(transform.position);
+            }
+
             if (onPlayerDiedChannel != null)
             {
                 onPlayerDiedChannel.RaiseEvent();
@@ -88,7 +104,17 @@ namespace Asteroids.Player
         }
 
         // Called by GameManager once the ship is repositioned and reactivated after a respawn.
-        public void BeginInvincibility()
+        public void OnRespawned()
+        {
+            if (shipConfig != null && shipConfig.RespawnEffect != null)
+            {
+                shipConfig.RespawnEffect.Play(transform.position);
+            }
+
+            BeginInvincibility();
+        }
+
+        private void BeginInvincibility()
         {
             if (invincibilityRoutine != null)
             {
@@ -103,11 +129,13 @@ namespace Asteroids.Player
             isInvincible = true;
 
             float elapsed = 0f;
+            bool blinkVisible = true;
             while (elapsed < invincibilityDuration)
             {
+                blinkVisible = !blinkVisible;
                 if (spriteRenderer != null)
                 {
-                    spriteRenderer.enabled = !spriteRenderer.enabled;
+                    spriteRenderer.enabled = blinkVisible && !isHidden;
                 }
 
                 yield return new WaitForSeconds(blinkInterval);
@@ -116,7 +144,7 @@ namespace Asteroids.Player
 
             if (spriteRenderer != null)
             {
-                spriteRenderer.enabled = true;
+                spriteRenderer.enabled = !isHidden;
             }
 
             isInvincible = false;

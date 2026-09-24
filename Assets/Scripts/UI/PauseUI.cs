@@ -14,12 +14,21 @@ namespace Asteroids.UI
         [Header("UI Elements")]
         [SerializeField] private GameObject pausePanel;
         [SerializeField] private Button resumeButton;
+        [SerializeField] private Button settingsButton;
+
+        [Header("Screens")]
+        [SerializeField] private SettingsUI settingsUI;
 
         private void Awake()
         {
             if (resumeButton != null)
             {
                 resumeButton.onClick.AddListener(HandleResumeClicked);
+            }
+
+            if (settingsButton != null)
+            {
+                settingsButton.onClick.AddListener(HandleSettingsClicked);
             }
         }
 
@@ -51,10 +60,29 @@ namespace Asteroids.UI
 
         private void HidePausePanel()
         {
+            // Resuming with Escape while settings are open should close everything. Closing settings
+            // re-shows the pause panel through its callback, so it has to happen first.
+            if (settingsUI != null)
+            {
+                settingsUI.Close();
+            }
+
             if (pausePanel != null)
             {
                 pausePanel.SetActive(false);
             }
+        }
+
+        private void HandleSettingsClicked()
+        {
+            if (settingsUI == null) return;
+
+            if (pausePanel != null)
+            {
+                pausePanel.SetActive(false);
+            }
+
+            settingsUI.Open(ShowPausePanel);
         }
 
         private void HandleResumeClicked()

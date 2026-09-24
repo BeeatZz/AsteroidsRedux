@@ -5,10 +5,20 @@ namespace Asteroids.Pooling
 {
     public class ObjectPool : MonoBehaviour
     {
+        [System.Serializable]
+        private struct PoolEntry
+        {
+            public GameObject Prefab;
+            public int Count;
+        }
+
         public static ObjectPool Instance { get; private set; }
+
+        [SerializeField] private List<PoolEntry> prewarmOnStart = new();
 
         private readonly Dictionary<string, Queue<PooledObject>> poolDictionary = new();
         private readonly Dictionary<string, GameObject> prefabLookup = new();
+        private readonly Dictionary<string, int> totalCounts = new();
 
         private void Awake()
         {
@@ -18,9 +28,16 @@ namespace Asteroids.Pooling
                 return;
             }
             Instance = this;
+
+            foreach (var entry in prewarmOnStart)
+            {
+                Prewarm(entry.Prefab, entry.Count);
+            }
         }
 
-        public void Prewarm(GameObject prefab, int initialSize)
+        // Tops the pool up until at least targetSize instances exist (active + pooled),
+        // so repeated calls for the same prefab don't stack.
+        public void Prewarm(GameObject prefab, int targetSize)
         {
             if (prefab == null) return;
             string key = GetPoolKey(prefab);
@@ -29,9 +46,10 @@ namespace Asteroids.Pooling
             {
                 poolDictionary[key] = new Queue<PooledObject>();
                 prefabLookup[key] = prefab;
+                totalCounts[key] = 0;
             }
 
-            for (int i = 0; i < initialSize; i++)
+            for (int i = totalCounts[key]; i < targetSize; i++)
             {
                 CreateNewInstance(key, prefab);
             }
@@ -97,6 +115,7 @@ namespace Asteroids.Pooling
             pooledObj.OnReturnRequested += ReturnToPool;
 
             poolDictionary[key].Enqueue(pooledObj);
+            totalCounts[key]++;
             return pooledObj;
         }
     }

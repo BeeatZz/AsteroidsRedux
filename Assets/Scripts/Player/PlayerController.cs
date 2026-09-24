@@ -21,6 +21,7 @@ namespace Asteroids.Player
 
         private Rigidbody2D rb;
         private Camera mainCamera;
+        private PlayerHyperspace hyperspace;
 
         private float moveInput;
         private float turnInput;
@@ -29,6 +30,7 @@ namespace Asteroids.Player
         {
             rb = GetComponent<Rigidbody2D>();
             mainCamera = Camera.main;
+            hyperspace = GetComponent<PlayerHyperspace>();
 
             ApplyConfigSettings();
         }
@@ -70,7 +72,8 @@ namespace Asteroids.Player
         private void ReadInput()
         {
             var keyboard = Keyboard.current;
-            if (keyboard == null)
+            bool inHyperspace = hyperspace != null && hyperspace.IsInHyperspace;
+            if (keyboard == null || inHyperspace)
             {
                 moveInput = 0f;
                 turnInput = 0f;

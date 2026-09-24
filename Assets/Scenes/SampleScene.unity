@@ -814,6 +814,7 @@ GameObject:
   - component: {fileID: 1922702870}
   - component: {fileID: 1922702876}
   - component: {fileID: 1922702877}
+  - component: {fileID: 1922702878}
   m_Layer: 0
   m_Name: Ship1
   m_TagString: Player
@@ -1095,7 +1096,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a05362a1fca4d38459266922658bf2e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  shipConfig: {fileID: 11400000, guid: bc932fce8ca6d894cb0fbd8eb31833f0, type: 2}
   onPlayerDiedChannel: {fileID: 11400000, guid: 13f6485bf070a054c96b7e51a21070bf, type: 2}
+--- !u!114 &1922702878
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1922702869}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbf7cc1cb10a4609a346e9e09ac50ffe, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  shipConfig: {fileID: 11400000, guid: bc932fce8ca6d894cb0fbd8eb31833f0, type: 2}
+  viewportMargin: 0.1
 --- !u!1 &7001707934513800679
 GameObject:
   m_ObjectHideFlags: 0
@@ -1142,9 +1158,12 @@ MonoBehaviour:
   m_EditorClassIdentifier:
   startingLives: 3
   respawnDelay: 2
+  extraLifeScoreInterval: 10000
+  maxLives: 9
   onPlayerDeathChannel: {fileID: 11400000, guid: 13f6485bf070a054c96b7e51a21070bf, type: 2}
   onLivesChangedChannel: {fileID: 11400000, guid: 563260acf73c4666a2339553b944d996, type: 2}
   onGameOverChannel: {fileID: 11400000, guid: 7b2fa00f52ff476fae24370209b5c060, type: 2}
+  onScoreChangedChannel: {fileID: 11400000, guid: 9b54f8d31a0e29c4fa0a2fc2cfe21f4b, type: 2}
 --- !u!1 &4921408028565544952
 GameObject:
   m_ObjectHideFlags: 0
