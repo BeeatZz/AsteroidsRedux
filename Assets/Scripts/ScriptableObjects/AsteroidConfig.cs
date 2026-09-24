@@ -7,6 +7,7 @@ namespace Asteroids.ScriptableObjects
     {
         [Header("Gameplay Stats")]
         [SerializeField] private int scoreValue = 100;
+        [SerializeField] private int health = 1;
         [SerializeField] private float moveSpeed = 3f;
         [SerializeField] private float minRotationSpeed = 20f;
         [SerializeField] private float maxRotationSpeed = 100f;
@@ -16,6 +17,7 @@ namespace Asteroids.ScriptableObjects
         [SerializeField] private int spawnCountOnDestroy = 2;
 
         public int ScoreValue => scoreValue;
+        public int Health => health;
         public float MoveSpeed => moveSpeed;
         public float MinRotationSpeed => minRotationSpeed;
         public float MaxRotationSpeed => maxRotationSpeed;

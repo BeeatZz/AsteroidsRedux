@@ -2,12 +2,13 @@ using UnityEngine;
 using Asteroids.Events;
 using Asteroids.Pooling;
 using Asteroids.ScriptableObjects;
-using Asteroids.Enemies.AI;
+using Asteroids.Combat;
+using Asteroids.Utility;
 
 namespace Asteroids.Enemies.AI
 {
     [RequireComponent(typeof(Rigidbody2D), typeof(PooledObject))]
-    public class UfoController : MonoBehaviour, IPoolable
+    public class UfoController : MonoBehaviour, IPoolable, IDamageable
     {
         [Header("Configuration")]
         [SerializeField] private UfoConfigSO config;
@@ -28,6 +29,7 @@ namespace Asteroids.Enemies.AI
         private PooledObject pooledObject;
         private Transform playerTransform;
         private Camera mainCamera;
+        private int currentHealth;
 
         public StateMachine StateMachine { get; private set; }
         public UfoEntryState EntryState { get; private set; }
@@ -56,6 +58,7 @@ namespace Asteroids.Enemies.AI
 
         public void OnSpawnFromPool()
         {
+            currentHealth = config != null ? config.Health : 1;
             FindPlayer();
             if (StateMachine != null && EntryState != null)
             {
@@ -84,18 +87,29 @@ namespace Asteroids.Enemies.AI
         {
             if (collision.CompareTag("Bullet"))
             {
+                int incomingDamage = collision.TryGetComponent<Bullet>(out var bullet) ? bullet.Damage : 1;
+
                 if (collision.TryGetComponent<PooledObject>(out var bulletPoolable) && !string.IsNullOrEmpty(bulletPoolable.PoolKey))
                 {
                     bulletPoolable.ReturnToPool();
                 }
 
-                Die();
+                TakeDamage(incomingDamage);
             }
         }
 
-        private void Die()
+        public void TakeDamage(int amount, bool awardScore = true)
         {
-            if (onScoreAddedChannel != null && config != null)
+            currentHealth -= amount;
+            if (currentHealth <= 0)
+            {
+                Die(awardScore);
+            }
+        }
+
+        private void Die(bool awardScore)
+        {
+            if (awardScore && onScoreAddedChannel != null && config != null)
             {
                 onScoreAddedChannel.RaiseEvent(config.ScoreValue);
             }
@@ -167,19 +181,8 @@ namespace Asteroids.Enemies.AI
 
         public void WrapScreen()
         {
-            if (mainCamera == null) return;
-
             float padding = config != null ? config.ScreenPadding : 0.05f;
-            Vector3 viewportPos = mainCamera.WorldToViewportPoint(transform.position);
-
-            if (viewportPos.x > 1f + padding) viewportPos.x = 0f - padding;
-            else if (viewportPos.x < 0f - padding) viewportPos.x = 1f + padding;
-
-            if (viewportPos.y > 1f + padding) viewportPos.y = 0f - padding;
-            else if (viewportPos.y < 0f - padding) viewportPos.y = 1f + padding;
-
-            viewportPos.z = mainCamera.WorldToViewportPoint(transform.position).z;
-            transform.position = mainCamera.ViewportToWorldPoint(viewportPos);
+            ScreenWrapper.Wrap(transform, mainCamera, padding);
         }
 
         private void UpdateAudioVolume()

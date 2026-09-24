@@ -23,7 +23,7 @@ namespace Asteroids.Pooling
         public void Prewarm(GameObject prefab, int initialSize)
         {
             if (prefab == null) return;
-            string key = prefab.name;
+            string key = GetPoolKey(prefab);
 
             if (!poolDictionary.ContainsKey(key))
             {
@@ -40,7 +40,7 @@ namespace Asteroids.Pooling
         public GameObject Get(GameObject prefab, Vector3 position, Quaternion rotation)
         {
             if (prefab == null) return null;
-            string key = prefab.name;
+            string key = GetPoolKey(prefab);
 
             if (!poolDictionary.ContainsKey(key))
             {
@@ -73,6 +73,13 @@ namespace Asteroids.Pooling
 
             obj.gameObject.SetActive(false);
             poolDictionary[obj.PoolKey].Enqueue(obj);
+        }
+
+        // Keyed by instance ID rather than prefab.name to avoid pool collisions between
+        // different prefab assets that happen to share a display name.
+        private string GetPoolKey(GameObject prefab)
+        {
+            return prefab.GetInstanceID().ToString();
         }
 
         private PooledObject CreateNewInstance(string key, GameObject prefab)

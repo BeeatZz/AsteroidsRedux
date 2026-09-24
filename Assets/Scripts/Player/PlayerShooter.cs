@@ -1,6 +1,8 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Asteroids.Pooling;
 using Asteroids.Combat;
+using Asteroids.ScriptableObjects;
 
 namespace Asteroids.Player
 {
@@ -27,7 +29,10 @@ namespace Asteroids.Player
 
         private void Update()
         {
-            if (Input.GetButton("Fire1") || Input.GetKey(KeyCode.Space))
+            bool firePressed = (Keyboard.current != null && Keyboard.current.spaceKey.isPressed)
+                || (Mouse.current != null && Mouse.current.leftButton.isPressed);
+
+            if (firePressed)
             {
                 TryShoot();
             }
@@ -46,7 +51,7 @@ namespace Asteroids.Player
 
             if (bulletObj.TryGetComponent<Bullet>(out var bullet))
             {
-                bullet.Initialize(weaponConfig.BulletSpeed, weaponConfig.BulletLifetime);
+                bullet.Initialize(weaponConfig.BulletSpeed, weaponConfig.BulletLifetime, weaponConfig.Damage);
             }
 
             if (audioSource != null && weaponConfig.ShootAudioClip != null)
