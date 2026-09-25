@@ -10,7 +10,7 @@ namespace Asteroids.Enemies
     [RequireComponent(typeof(Rigidbody2D), typeof(PooledObject))]
     public class Asteroid : MonoBehaviour, IPoolable, IDamageable
     {
-        private const float ScreenPadding = 0.05f;
+        private const float FallbackWrapPadding = 0.5f;
 
         [Header("Config")]
         [SerializeField] private AsteroidConfig config;
@@ -21,19 +21,27 @@ namespace Asteroids.Enemies
         private Rigidbody2D rb;
         private PooledObject pooledObject;
         private Camera mainCamera;
+        private SpriteRenderer spriteRenderer;
+        private float wrapPadding = FallbackWrapPadding;
         private float rotSpeed;
         private int currentHealth;
+        private float speedMultiplier = 1f;
 
         private void Awake()
         {
             rb = GetComponent<Rigidbody2D>();
             pooledObject = GetComponent<PooledObject>();
             mainCamera = Camera.main;
+            spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+
+            // Normally set on spawn; covers an asteroid placed directly in a scene.
+            currentHealth = config != null ? config.Health : 1;
         }
 
         public void OnSpawnFromPool()
         {
             currentHealth = config != null ? config.Health : 1;
+            wrapPadding = CalculateWrapPadding();
 
             if (config != null)
             {
@@ -47,6 +55,19 @@ namespace Asteroids.Enemies
         {
             rb.linearVelocity = Vector2.zero;
             rb.angularVelocity = 0f;
+            speedMultiplier = 1f;
+        }
+
+        // Lets a spawner (e.g. WaveManager) scale speed per-wave; split fragments
+        // inherit it so later waves don't slow down as asteroids break apart.
+        public void SetSpeedMultiplier(float multiplier)
+        {
+            speedMultiplier = multiplier;
+
+            if (config != null)
+            {
+                rb.linearVelocity = rb.linearVelocity.normalized * (config.MoveSpeed * speedMultiplier);
+            }
         }
 
         private void Update()
@@ -59,13 +80,19 @@ namespace Asteroids.Enemies
         {
             if (collision.CompareTag("Bullet"))
             {
-                int incomingDamage = collision.TryGetComponent<Bullet>(out var bullet) ? bullet.ResolveHit() : 1;
+                int incomingDamage = 1;
+                if (collision.TryGetComponent<Bullet>(out var bullet) && !bullet.TryResolveHit(out incomingDamage)) return;
+
                 TakeDamage(incomingDamage);
             }
         }
 
         public void TakeDamage(int amount, bool awardScore = true)
         {
+            // Already destroyed earlier this physics step (e.g. two bullets landing at once);
+            // without this it would score, split and explode a second time.
+            if (currentHealth <= 0) return;
+
             currentHealth -= amount;
             if (currentHealth <= 0)
             {
@@ -86,7 +113,12 @@ namespace Asteroids.Enemies
             {
                 for (int i = 0; i < config.SpawnCountOnDestroy; i++)
                 {
-                    ObjectPool.Instance.Get(config.NextSizePrefab, transform.position, Quaternion.identity);
+                    GameObject fragment = ObjectPool.Instance.Get(config.NextSizePrefab, transform.position, Quaternion.identity);
+
+                    if (fragment != null && fragment.TryGetComponent<Asteroid>(out var fragmentAsteroid))
+                    {
+                        fragmentAsteroid.SetSpeedMultiplier(speedMultiplier);
+                    }
                 }
             }
 
@@ -101,7 +133,18 @@ namespace Asteroids.Enemies
 
         private void WrapScreen()
         {
-            ScreenWrapper.Wrap(transform, mainCamera, ScreenPadding);
+            ScreenWrapper.WrapWithWorldPadding(transform, mainCamera, wrapPadding);
+        }
+
+        // Half the sprite's size in world units, so each asteroid size wraps exactly when
+        // it fully leaves the screen. Measured on spawn, when the pool has just reset
+        // rotation to identity, so the AABB isn't inflated by the sprite's spin.
+        private float CalculateWrapPadding()
+        {
+            if (spriteRenderer == null) return FallbackWrapPadding;
+
+            Vector3 extents = spriteRenderer.bounds.extents;
+            return Mathf.Max(extents.x, extents.y);
         }
     }
 }

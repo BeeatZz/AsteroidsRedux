@@ -68,9 +68,15 @@ namespace Asteroids.Combat
         }
 
         // Called by whatever the bullet hit: plays the impact effect, recycles the bullet
-        // and returns the damage it deals.
-        public int ResolveHit()
+        // and hands back the damage it deals. Returns false if the bullet was already spent
+        // this physics step (it overlapped two targets at once), so it only ever hits one.
+        public bool TryResolveHit(out int damage)
         {
+            damage = 0;
+            if (!gameObject.activeSelf) return false;
+
+            damage = currentDamage;
+
             if (impactEffect != null)
             {
                 impactEffect.Play(transform.position);
@@ -80,8 +86,12 @@ namespace Asteroids.Combat
             {
                 pooledObject.ReturnToPool();
             }
+            else
+            {
+                gameObject.SetActive(false);
+            }
 
-            return currentDamage;
+            return true;
         }
 
         public void OnReturnToPool()

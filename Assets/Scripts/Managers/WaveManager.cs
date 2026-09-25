@@ -102,9 +102,9 @@ namespace Asteroids.Managers
                 Vector3 spawnPos = SpawnPoints.RandomEdgePosition(mainCamera, config.SpawnEdgePadding);
                 GameObject asteroid = ObjectPool.Instance.Get(asteroidPrefab, spawnPos, Quaternion.identity);
 
-                if (asteroid != null && asteroid.TryGetComponent<Rigidbody2D>(out var rb))
+                if (asteroid != null && asteroid.TryGetComponent<Asteroid>(out var asteroidComponent))
                 {
-                    rb.linearVelocity *= speedMultiplier;
+                    asteroidComponent.SetSpeedMultiplier(speedMultiplier);
                 }
             }
         }
