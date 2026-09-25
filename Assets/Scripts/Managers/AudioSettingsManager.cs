@@ -18,7 +18,7 @@ namespace Asteroids.Managers
         public static AudioSettingsManager Instance { get; private set; }
 
         [Header("Mixer")]
-        [Tooltip("Must expose MasterVolume, MusicVolume, SFXVolume and UIVolume parameters.")]
+        [Tooltip("Must expose MasterVol, MusicVol, SFXVol and UIVol parameters.")]
         [SerializeField] private AudioMixer mixer;
 
         [Header("Defaults (0-1)")]
@@ -88,7 +88,7 @@ namespace Asteroids.Managers
             return linear <= MinLinearVolume ? MinDecibels : Mathf.Log10(linear) * 20f;
         }
 
-        private static string GetMixerParameter(AudioChannel channel) => $"{channel}Volume";
+        private static string GetMixerParameter(AudioChannel channel) => $"{channel}Vol";
 
         private static string GetPrefsKey(AudioChannel channel) => PrefsKeyPrefix + channel;
     }

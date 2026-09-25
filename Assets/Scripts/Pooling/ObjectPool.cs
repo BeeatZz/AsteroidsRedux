@@ -84,6 +84,10 @@ namespace Asteroids.Pooling
 
         public void ReturnToPool(PooledObject obj)
         {
+            // Guards against double returns (e.g. a bullet overlapping two asteroids in the
+            // same physics step), which would enqueue the same instance twice.
+            if (!obj.gameObject.activeSelf) return;
+
             foreach (var poolable in obj.GetComponents<IPoolable>())
             {
                 poolable.OnReturnToPool();

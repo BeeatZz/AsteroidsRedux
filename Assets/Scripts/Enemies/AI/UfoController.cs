@@ -53,6 +53,9 @@ namespace Asteroids.Enemies.AI
             pooledObject = GetComponent<PooledObject>();
             mainCamera = Camera.main;
 
+            // Normally set on spawn; covers a UFO placed directly in a scene.
+            currentHealth = config != null ? config.Health : 1;
+
             StateMachine = new StateMachine();
             EntryState = new UfoEntryState(this, StateMachine);
             EngageState = new UfoEngageState(this, StateMachine);
@@ -96,13 +99,19 @@ namespace Asteroids.Enemies.AI
         {
             if (collision.CompareTag("Bullet"))
             {
-                int incomingDamage = collision.TryGetComponent<Bullet>(out var bullet) ? bullet.ResolveHit() : 1;
+                int incomingDamage = 1;
+                if (collision.TryGetComponent<Bullet>(out var bullet) && !bullet.TryResolveHit(out incomingDamage)) return;
+
                 TakeDamage(incomingDamage);
             }
         }
 
         public void TakeDamage(int amount, bool awardScore = true)
         {
+            // Already destroyed earlier this physics step (e.g. two bullets landing at once);
+            // without this it would score and explode a second time.
+            if (currentHealth <= 0) return;
+
             currentHealth -= amount;
             if (currentHealth <= 0)
             {

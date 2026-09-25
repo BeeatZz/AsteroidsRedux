@@ -66,7 +66,9 @@ namespace Asteroids.Player
         {
             if (collision.CompareTag("EnemyBullet"))
             {
-                int incomingDamage = collision.TryGetComponent<Bullet>(out var bullet) ? bullet.ResolveHit() : 1;
+                int incomingDamage = 1;
+                if (collision.TryGetComponent<Bullet>(out var bullet) && !bullet.TryResolveHit(out incomingDamage)) return;
+
                 TakeDamage(incomingDamage);
             }
             else if (collision.CompareTag("Enemy"))
@@ -90,6 +92,9 @@ namespace Asteroids.Player
 
         public void Die()
         {
+            // Two lethal contacts in the same physics step must only cost one life.
+            if (!gameObject.activeSelf) return;
+
             if (shipConfig != null && shipConfig.DeathEffect != null)
             {
                 shipConfig.DeathEffect.Play(transform.position);

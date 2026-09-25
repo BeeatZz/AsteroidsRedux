@@ -15,30 +15,33 @@ A 2D Asteroids clone built in Unity, used as a sandbox for practicing clean, dec
 ```
 Assets/
 ├── Art/            Sprites for ships and projectiles
-├── Audio/          SFX for projectiles and UFO
-├── Data/           ScriptableObject config assets (Enemies, Ship, Weapons, Events)
-├── Prefabs/        Player/enemy/projectile prefabs
+├── Audio/          SFX, music, and the AudioMixer
+├── Data/           ScriptableObject assets (Enemies, Ship, Weapons, Waves, Events)
+├── Prefabs/        Enemy, projectile, and UI prefabs
 ├── Scenes/         Game scenes
 └── Scripts/
-    ├── Combat/       Bullet behavior
+    ├── Audio/        MusicPlayer, UISoundPlayer, UIButtonSound
+    ├── Combat/       Bullet behavior, IDamageable
+    ├── Effects/      EffectSO and pooled one-shot VFX/SFX
     ├── Enemies/      Asteroid, and UFO + its AI state machine
     ├── Events/       ScriptableObject event channels (Int, Vector3, Void)
-    ├── Managers/     ScoreManager
-    ├── Player/       PlayerController, PlayerShooter, PlayerHealth
+    ├── Managers/     GameManager, PauseManager, ScoreManager, WaveManager, AudioSettingsManager
+    ├── Player/       PlayerController, PlayerShooter, PlayerHealth, PlayerHyperspace
     ├── Pooling/      Generic object pooling system
-    ├── ScriptableObjects/  Config assets (Ship, Weapon, Asteroid, UFO)
-    └── UI/           ScoreUI
+    ├── ScriptableObjects/  Config assets (Ship, Weapon, Asteroid, UFO, Wave)
+    ├── UI/           ScoreUI, LivesUI, PauseUI, GameOverUI, SettingsUI
+    └── Utility/      Shared screen-wrap and edge-spawn math
 ```
 
 ## Architecture
 
 ### Data-driven configuration (ScriptableObjects)
 
-Gameplay tuning values (ship thrust/speed, weapon fire rate, asteroid speed/score, UFO stats) live in `ScriptableObject` assets (`ShipConfig`, `WeaponConfig`, `AsteroidConfig`, `UfoConfigSO`) instead of being hardcoded on components. This lets designers rebalance the game or create variants without touching code or recompiling.
+Gameplay tuning values (ship thrust/speed, weapon fire rate, asteroid speed/score, UFO stats, wave difficulty scaling) live in `ScriptableObject` assets (`ShipConfig`, `WeaponConfig`, `AsteroidConfig`, `UfoConfigSO`, `WaveConfig`) instead of being hardcoded on components. This lets designers rebalance the game or create variants without touching code or recompiling.
 
 ### Observer pattern via event channels
 
-Cross-system communication (score changes, player death) is decoupled using `ScriptableObject`-based event channels (`IntEventChannelSO`, `Vector3EventChannelSO`, `VoidEventChannelSO`) under `Scripts/Events`. Publishers (e.g. `Asteroid`, `UfoController`) raise events on a channel asset; subscribers (e.g. `ScoreManager`, `ScoreUI`) listen without any direct reference to the publisher. This keeps gameplay, scoring, and UI fully independent of one another.
+Cross-system communication (score, lives, player death, pause/resume, game over, wave start) is decoupled using `ScriptableObject`-based event channels (`IntEventChannelSO`, `Vector3EventChannelSO`, `VoidEventChannelSO`) under `Scripts/Events`. Publishers (e.g. `Asteroid`, `UfoController`) raise events on a channel asset; subscribers (e.g. `ScoreManager`, `ScoreUI`) listen without any direct reference to the publisher. This keeps gameplay, scoring, and UI fully independent of one another.
 
 ### Enemy AI via finite state machine
 
@@ -54,6 +57,10 @@ Frequently spawned/destroyed objects (bullets, asteroids, UFOs) are recycled thr
 - **Asteroids** (`Asteroid`): Drift and rotate with random velocity, wrap around the screen, and split into smaller asteroids (via `NextSizePrefab`) when destroyed, raising a score event.
 - **UFO** (`UfoController` + FSM states): Enters from off-screen, then loops between weaving toward/around the player and firing aimed shots, with engine audio volume that scales based on on/off-screen distance.
 - **Scoring** (`ScoreManager`, `ScoreUI`): Listens for score-added events, accumulates total score, and broadcasts score-changed events consumed by the TextMeshPro UI.
+- **Lives & game over** (`GameManager`, `LivesUI`, `GameOverUI`): Tracks lives on player death, respawns the ship at its starting point with a blinking invulnerability window, and freezes the game on game over with a restart option.
+- **Pause** (`PauseManager`, `PauseUI`): Escape/P toggles pause via `Time.timeScale`, broadcasting paused/resumed events for the UI; disabled once the game is over.
+- **Waves** (`WaveManager`, `WaveConfig`): Spawns asteroids off-screen each wave, with count and speed scaling per wave (split fragments inherit the wave's speed). UFOs spawn on a shrinking timer from a configurable wave onward, picked from weighted variants unlocked by wave number, with faster fire rates in later waves. The next wave starts once all asteroids are cleared.
+- **Screen wrapping** (`ScreenWrapper`): Static helper called by the player, asteroids, and UFOs to loop objects around the play area.
 - **Extra lives** (`GameManager`): Listens for score-changed events and awards a bonus life every `extraLifeScoreInterval` points (default 10,000), capped at `maxLives`.
 - **Effects** (`EffectSO`, `PooledEffect`): One-shot particles and sounds (explosions, bullet impacts, hyperspace, respawn) are pooled prefabs described by `EffectSO` assets. Configs reference an effect and gameplay code calls `effect.Play(position)`. Each effect picks a random clip and pitch, and caps how many copies of its sound can play at once so chain explosions don't clip.
 - **Audio mixing & settings** (`AudioSettingsManager`, `SettingsUI`, `MusicPlayer`, `UISoundPlayer`): Every AudioSource routes to a Music, SFX or UI group under Master. The settings screen's sliders drive exposed mixer volumes (converted to decibels) and are saved in `PlayerPrefs`. Pausing sets `AudioListener.pause`, which silences gameplay sound while music and UI sounds keep playing.
