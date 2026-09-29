@@ -16,4 +16,6 @@ MonoBehaviour:
   screenPadding: 0.05
   fireRate: 1.8
   scoreValue: 200
+  health: 3
   maxAudioDistance: 0.5
+  destroyEffect: {fileID: 11400000, guid: d510166eccad7ce4e86ab7e461d8ba7d, type: 2}

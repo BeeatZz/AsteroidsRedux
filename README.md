@@ -14,22 +14,22 @@ A 2D Asteroids clone built in Unity, used as a sandbox for practicing clean, dec
 
 ```
 Assets/
-├── Art/            Sprites for ships and projectiles
+├── Art/            Sprites, UI art, fonts, effect textures/materials and the shockwave shader
 ├── Audio/          SFX, music, and the AudioMixer
-├── Data/           ScriptableObject assets (Enemies, Ship, Weapons, Waves, Events)
-├── Prefabs/        Enemy, projectile, and UI prefabs
+├── Data/           ScriptableObject assets (Enemies, Ship, Weapons, Waves, Effects, Events)
+├── Prefabs/        Enemy, projectile, effect and UI prefabs
 ├── Scenes/         Game scenes
 └── Scripts/
     ├── Audio/        MusicPlayer, UISoundPlayer, UIButtonSound
     ├── Combat/       Bullet behavior, IDamageable
-    ├── Effects/      EffectSO and pooled one-shot VFX/SFX
+    ├── Effects/      EffectSO, pooled one-shot VFX/SFX, slow motion and shockwave (+ editor builder)
     ├── Enemies/      Asteroid, and UFO + its AI state machine
     ├── Events/       ScriptableObject event channels (Int, Vector3, Void)
     ├── Managers/     GameManager, PauseManager, ScoreManager, WaveManager, AudioSettingsManager
     ├── Player/       PlayerController, PlayerShooter, PlayerHealth, PlayerHyperspace
     ├── Pooling/      Generic object pooling system
     ├── ScriptableObjects/  Config assets (Ship, Weapon, Asteroid, UFO, Wave)
-    ├── UI/           ScoreUI, LivesUI, PauseUI, GameOverUI, SettingsUI
+    ├── UI/           ScoreUI, LivesUI, PauseUI, GameOverUI, SettingsUI, SpriteToggleButton, SliderLayout
     └── Utility/      Shared screen-wrap and edge-spawn math
 ```
 
@@ -57,14 +57,15 @@ Frequently spawned/destroyed objects (bullets, asteroids, UFOs) are recycled thr
 - **Asteroids** (`Asteroid`): Drift and rotate with random velocity, wrap around the screen, and split into smaller asteroids (via `NextSizePrefab`) when destroyed, raising a score event.
 - **UFO** (`UfoController` + FSM states): Enters from off-screen, then loops between weaving toward/around the player and firing aimed shots, with engine audio volume that scales based on on/off-screen distance.
 - **Scoring** (`ScoreManager`, `ScoreUI`): Listens for score-added events, accumulates total score, and broadcasts score-changed events consumed by the TextMeshPro UI.
-- **Lives & game over** (`GameManager`, `LivesUI`, `GameOverUI`): Tracks lives on player death, respawns the ship at its starting point with a blinking invulnerability window, and freezes the game on game over with a restart option.
-- **Pause** (`PauseManager`, `PauseUI`): Escape/P toggles pause via `Time.timeScale`, broadcasting paused/resumed events for the UI; disabled once the game is over.
-- **Waves** (`WaveManager`, `WaveConfig`): Spawns asteroids off-screen each wave, with count and speed scaling per wave (split fragments inherit the wave's speed). UFOs spawn on a shrinking timer from a configurable wave onward, picked from weighted variants unlocked by wave number, with faster fire rates in later waves. The next wave starts once all asteroids are cleared.
+- **Lives & game over** (`GameManager`, `LivesUI`, `GameOverUI`): Tracks lives on player death (shown as ship icons), respawns the ship at its starting point with a blinking invulnerability window, and freezes the game on game over with the final score, a restart option and a main menu hook (`GameManager.ReturnToMainMenu`, which loads a configurable scene).
+- **Pause & settings** (`PauseManager`, `PauseUI`, `SettingsUI`, `SpriteToggleButton`): Escape/P toggles pause via `Time.timeScale`, broadcasting paused/resumed events for the UI; disabled once the game is over. The pause menu opens a settings screen with Master/Music/SFX volume sliders and mute toggles (a muted channel's slider is drawn darker).
+- **Waves** (`WaveManager`, `WaveConfig`): Spawns asteroids off-screen each wave, with count and speed scaling per wave (split fragments inherit the wave's speed). UFOs spawn on a shrinking timer from a configurable wave onward, picked from weighted variants unlocked by wave number, with faster fire rates in later waves. A wave ends once every asteroid and UFO is destroyed; no new UFOs spawn after the last asteroid, so a wave can always finish. The next wave then starts after a short delay.
 - **Screen wrapping** (`ScreenWrapper`): Static helper called by the player, asteroids, and UFOs to loop objects around the play area.
 - **Extra lives** (`GameManager`): Listens for score-changed events and awards a bonus life every `extraLifeScoreInterval` points (default 10,000), capped at `maxLives`.
 - **Effects** (`EffectSO`, `PooledEffect`): One-shot particles and sounds (explosions, bullet impacts, hyperspace, respawn) are pooled prefabs described by `EffectSO` assets. Configs reference an effect and gameplay code calls `effect.Play(position)`. Each effect picks a random clip and pitch, and caps how many copies of its sound can play at once so chain explosions don't clip.
-- **Audio mixing & settings** (`AudioSettingsManager`, `SettingsUI`, `MusicPlayer`, `UISoundPlayer`): Every AudioSource routes to a Music, SFX or UI group under Master. The settings screen's sliders drive exposed mixer volumes (converted to decibels) and are saved in `PlayerPrefs`. Pausing sets `AudioListener.pause`, which silences gameplay sound while music and UI sounds keep playing.
+- **Audio mixing & settings** (`AudioSettingsManager`, `SettingsUI`, `MusicPlayer`, `UISoundPlayer`): Every AudioSource routes to the Music or SFX group under Master (UI sounds sit under SFX). The settings screen's sliders and mute toggles drive exposed mixer volumes (converted to decibels) and are saved in `PlayerPrefs`. Pausing sets `AudioListener.pause`, which silences gameplay sound while music and UI sounds keep playing. The music fades in after a short delay and crossfades to a separate pause track while paused.
 - **Hyperspace** (`PlayerHyperspace`): Left Shift or right mouse button makes the ship vanish and reappear at a random on-screen spot, preferring one away from enemies. Re-entry has a configurable chance to destroy the ship, as in the arcade original. Tuning lives in `ShipConfig`.
+- **Wave-clear slow motion & shockwave** (`SlowMotionEffect`, `ShockwaveEffect`): The kill that empties a wave slows the game down (time, physics steps and mixer pitch) and sends a ring of screen distortion out from where the enemy died, using a full-screen shader pass on the 2D Renderer.
 
 ## Requirements
 

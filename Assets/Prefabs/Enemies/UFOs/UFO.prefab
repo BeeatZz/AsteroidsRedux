@@ -196,7 +196,7 @@ AudioSource:
   m_GameObject: {fileID: 6136894158073600219}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: -9116022833733964768, guid: 2fe9659ed634fa2409d271fab7cb6c1b, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: b61f00eaa746c764e849e0a6de4b818f, type: 3}
   m_PlayOnAwake: 0
@@ -308,7 +308,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9428d0be1c2fb9f4cbd4c9aab108d4cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  config: {fileID: 0}
+  config: {fileID: 11400000, guid: 5508235ba4fca6e4eb3a93fc6cd8873a, type: 2}
+  onScoreAddedChannel: {fileID: 11400000, guid: 50dfe38b48f8614459bd260736385d89, type: 2}
+  onEnemyDestroyedChannel: {fileID: 11400000, guid: 9aacd56e7723b2940b99aba8117948e8, type: 2}
   bulletPrefab: {fileID: 8568849558404467191, guid: 10ea741b7cd54d04db0ccdc5c114420e, type: 3}
   firePoint: {fileID: 7084276798625301816}
   engineAudioSource: {fileID: 4700230173976822689}

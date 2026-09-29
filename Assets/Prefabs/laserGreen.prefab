@@ -291,7 +291,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd74fadcc38f261429b0b2cb82ed64a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  defaultSpeed: 12
+  defaultLifetime: 3
+  defaultDamage: 1
   trailRenderer: {fileID: 0}
+  impactEffect: {fileID: 11400000, guid: cb65cfaf51cedf54b8d332fea872c204, type: 2}
 --- !u!58 &6048223737757343683
 CircleCollider2D:
   m_ObjectHideFlags: 0

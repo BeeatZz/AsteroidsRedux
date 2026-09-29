@@ -16,6 +16,14 @@ MonoBehaviour:
   rotationSpeed: 180
   maxSpeed: 12
   linearDrag: 0.4
+  hyperspaceDuration: 0.5
+  hyperspaceCooldown: 1.5
+  hyperspaceFailChance: 0.1
+  hyperspaceSafeRadius: 1.5
   thrustParticlesPrefab: {fileID: 0}
   thrustAudioClip: {fileID: 0}
+  deathEffect: {fileID: 11400000, guid: 4f2d2dd73699c2349bb62a1ba3d4e7c9, type: 2}
+  respawnEffect: {fileID: 11400000, guid: 82b9697b936d43c4cbf692f3f3248c08, type: 2}
+  hyperspaceExitEffect: {fileID: 11400000, guid: 72b213ba3099574479e5c3fa91d66939, type: 2}
+  hyperspaceEnterEffect: {fileID: 11400000, guid: b45aff325708186489ac686d3991d695, type: 2}
   audioFadeSpeed: 5

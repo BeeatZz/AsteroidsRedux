@@ -72,7 +72,7 @@ namespace Asteroids.Managers
             Time.timeScale = 0f;
 
             // timeScale doesn't stop audio. This pauses every source except those with
-            // ignoreListenerPause set (UISoundPlayer, and MusicPlayer by default).
+            // ignoreListenerPause set (UISoundPlayer, and MusicPlayer, which handles the pause menu itself).
             AudioListener.pause = true;
             onGamePausedChannel?.RaiseEvent();
         }

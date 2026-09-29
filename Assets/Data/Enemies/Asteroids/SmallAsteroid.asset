@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: af9e0b1a47a842446be24664da838399, type: 3}
   m_Name: SmallAsteroid
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   scoreValue: 200
   health: 1
   moveSpeed: 6.5
@@ -19,3 +19,4 @@ MonoBehaviour:
   maxRotationSpeed: 160
   nextSizePrefab: {fileID: 0}
   spawnCountOnDestroy: 2
+  destroyEffect: {fileID: 11400000, guid: 0f8e8c9a52e55ad47ac5f82803a42771, type: 2}
