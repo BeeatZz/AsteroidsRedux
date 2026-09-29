@@ -22,7 +22,7 @@ namespace Asteroids.Managers
 
         [Header("Scenes")]
         [Tooltip("Scene loaded by ReturnToMainMenu. Must be added to File > Build Profiles > Scene List.")]
-        [SerializeField] private string mainMenuSceneName = "MainMenu";
+        [SerializeField] private string mainMenuSceneName = "MainMenuScene";
 
         [Header("Event Channels")]
         [SerializeField] private VoidEventChannelSO onPlayerDeathChannel;

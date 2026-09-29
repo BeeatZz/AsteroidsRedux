@@ -29,7 +29,7 @@ Assets/
     ├── Player/       PlayerController, PlayerShooter, PlayerHealth, PlayerHyperspace
     ├── Pooling/      Generic object pooling system
     ├── ScriptableObjects/  Config assets (Ship, Weapon, Asteroid, UFO, Wave)
-    ├── UI/           ScoreUI, LivesUI, PauseUI, GameOverUI, SettingsUI, SpriteToggleButton, SliderLayout
+    ├── UI/           ScoreUI, LivesUI, PauseUI, GameOverUI, SettingsUI, MainMenuUI, SpriteToggleButton, SliderLayout
     └── Utility/      Shared screen-wrap and edge-spawn math
 ```
 
@@ -59,6 +59,7 @@ Frequently spawned/destroyed objects (bullets, asteroids, UFOs) are recycled thr
 - **Scoring** (`ScoreManager`, `ScoreUI`): Listens for score-added events, accumulates total score, and broadcasts score-changed events consumed by the TextMeshPro UI.
 - **Lives & game over** (`GameManager`, `LivesUI`, `GameOverUI`): Tracks lives on player death (shown as ship icons), respawns the ship at its starting point with a blinking invulnerability window, and freezes the game on game over with the final score, a restart option and a main menu hook (`GameManager.ReturnToMainMenu`, which loads a configurable scene).
 - **Pause & settings** (`PauseManager`, `PauseUI`, `SettingsUI`, `SpriteToggleButton`): Escape/P toggles pause via `Time.timeScale`, broadcasting paused/resumed events for the UI; disabled once the game is over. The pause menu opens a settings screen with Master/Music/SFX volume sliders and mute toggles (a muted channel's slider is drawn darker).
+- **Main menu** (`MainMenuUI`): A separate `MainMenuScene`, first in the build, with Play (loads `GameScene`), Settings (the same `SettingsUI` the pause menu uses, opened with a callback that brings the menu back) and Quit (hidden on WebGL). Behind it, `MenuAsteroidField` scatters the real asteroid prefabs, slowed down, drifting and wrapping as in the game. `UIPulse` gently pulses the title, and `ButtonPressEffect` makes buttons sink and darken while pressed, on top of their sprite swap. The pause and game-over screens return here through `GameManager.ReturnToMainMenu`.
 - **Waves** (`WaveManager`, `WaveConfig`): Spawns asteroids off-screen each wave, with count and speed scaling per wave (split fragments inherit the wave's speed). UFOs spawn on a shrinking timer from a configurable wave onward, picked from weighted variants unlocked by wave number, with faster fire rates in later waves. A wave ends once every asteroid and UFO is destroyed; no new UFOs spawn after the last asteroid, so a wave can always finish. The next wave then starts after a short delay.
 - **Screen wrapping** (`ScreenWrapper`): Static helper called by the player, asteroids, and UFOs to loop objects around the play area.
 - **Extra lives** (`GameManager`): Listens for score-changed events and awards a bonus life every `extraLifeScoreInterval` points (default 10,000), capped at `maxLives`.
