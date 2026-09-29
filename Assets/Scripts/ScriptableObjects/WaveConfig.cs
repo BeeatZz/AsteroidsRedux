@@ -10,6 +10,13 @@ namespace Asteroids.ScriptableObjects
         [SerializeField] private int asteroidCountIncreasePerWave = 2;
         [SerializeField] private float asteroidSpeedIncreasePerWave = 0.15f;
         [SerializeField] private float maxAsteroidSpeedMultiplier = 2.5f;
+        [Tooltip("Seconds between each asteroid of a wave drifting in from off-screen. 0 sends them all at once.")]
+        [Min(0f)]
+        [SerializeField] private float asteroidSpawnInterval = 0.4f;
+        [Tooltip("Asteroids aim at a random point at least this far in from the screen edges " +
+                 "(viewport fraction, 0-0.5), so each one crosses into view.")]
+        [Range(0f, 0.5f)]
+        [SerializeField] private float asteroidAimInset = 0.25f;
 
         [Header("UFO")]
         [SerializeField] private int firstUfoWave = 2;
@@ -23,12 +30,15 @@ namespace Asteroids.ScriptableObjects
         [Header("Pacing")]
         [SerializeField] private float waveStartDelay = 2f;
         [SerializeField] private float waveClearCheckInterval = 0.5f;
+        [Tooltip("How far outside the screen UFOs spawn (viewport fraction). Asteroids use their own size instead.")]
         [SerializeField] private float spawnEdgePadding = 0.1f;
 
         public int BaseAsteroidCount => baseAsteroidCount;
         public int AsteroidCountIncreasePerWave => asteroidCountIncreasePerWave;
         public float AsteroidSpeedIncreasePerWave => asteroidSpeedIncreasePerWave;
         public float MaxAsteroidSpeedMultiplier => maxAsteroidSpeedMultiplier;
+        public float AsteroidSpawnInterval => asteroidSpawnInterval;
+        public float AsteroidAimInset => asteroidAimInset;
 
         public int FirstUfoWave => firstUfoWave;
         public float UfoSpawnIntervalBase => ufoSpawnIntervalBase;
