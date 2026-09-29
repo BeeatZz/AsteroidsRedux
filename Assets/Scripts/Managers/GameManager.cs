@@ -20,6 +20,10 @@ namespace Asteroids.Managers
         [Tooltip("Bonus lives stop being awarded once the player has this many.")]
         [SerializeField] private int maxLives = 9;
 
+        [Header("Scenes")]
+        [Tooltip("Scene loaded by ReturnToMainMenu. Must be added to File > Build Profiles > Scene List.")]
+        [SerializeField] private string mainMenuSceneName = "MainMenu";
+
         [Header("Event Channels")]
         [SerializeField] private VoidEventChannelSO onPlayerDeathChannel;
         [SerializeField] private IntEventChannelSO onLivesChangedChannel;
@@ -152,6 +156,22 @@ namespace Asteroids.Managers
         {
             Time.timeScale = 1f;
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+
+        public void ReturnToMainMenu()
+        {
+            // Checked up front so the button fails with a clear message (and the game stays
+            // paused) until the main menu scene exists and is in the build.
+            if (!Application.CanStreamedLevelBeLoaded(mainMenuSceneName))
+            {
+                Debug.LogWarning($"Main menu scene '{mainMenuSceneName}' isn't in the build's scene list yet.", this);
+                return;
+            }
+
+            // Both survive scene loads, and the menu scene has no PauseManager to reset them.
+            Time.timeScale = 1f;
+            AudioListener.pause = false;
+            SceneManager.LoadScene(mainMenuSceneName);
         }
     }
 }

@@ -15,6 +15,7 @@ namespace Asteroids.UI
         [SerializeField] private GameObject pausePanel;
         [SerializeField] private Button resumeButton;
         [SerializeField] private Button settingsButton;
+        [SerializeField] private Button mainMenuButton;
 
         [Header("Screens")]
         [SerializeField] private SettingsUI settingsUI;
@@ -29,6 +30,11 @@ namespace Asteroids.UI
             if (settingsButton != null)
             {
                 settingsButton.onClick.AddListener(HandleSettingsClicked);
+            }
+
+            if (mainMenuButton != null)
+            {
+                mainMenuButton.onClick.AddListener(HandleMainMenuClicked);
             }
         }
 
@@ -90,6 +96,14 @@ namespace Asteroids.UI
             if (PauseManager.Instance != null)
             {
                 PauseManager.Instance.Resume();
+            }
+        }
+
+        private void HandleMainMenuClicked()
+        {
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.ReturnToMainMenu();
             }
         }
     }
