@@ -41,10 +41,6 @@ namespace Asteroids.ScriptableObjects
         [Tooltip("Re-entry tries to avoid landing within this distance of an enemy.")]
         [SerializeField] private float hyperspaceSafeRadius = 1.5f;
 
-        [Header("Visuals & Audio")]
-        [SerializeField] private GameObject thrustParticlesPrefab;
-        [SerializeField] private AudioClip thrustAudioClip;
-
         [Header("Effects")]
         [SerializeField] private EffectSO deathEffect;
         [SerializeField] private EffectSO respawnEffect;
@@ -67,9 +63,6 @@ namespace Asteroids.ScriptableObjects
         public float HyperspaceCooldown => hyperspaceCooldown;
         public float HyperspaceFailChance => hyperspaceFailChance;
         public float HyperspaceSafeRadius => hyperspaceSafeRadius;
-
-        public GameObject ThrustParticlesPrefab => thrustParticlesPrefab;
-        public AudioClip ThrustAudioClip => thrustAudioClip;
 
         public EffectSO DeathEffect => deathEffect;
         public EffectSO RespawnEffect => respawnEffect;

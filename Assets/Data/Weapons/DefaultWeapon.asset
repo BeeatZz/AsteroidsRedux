@@ -17,6 +17,4 @@ MonoBehaviour:
   bulletLifetime: 3
   damage: 1
   bulletPrefab: {fileID: 8568849558404467191, guid: 9e1840c89d8a868439c3a3c9e0defdcb, type: 3}
-  muzzleFlashPrefab: {fileID: 0}
-  impactFXPrefab: {fileID: 0}
   shootAudioClip: {fileID: 8300000, guid: 1b41c650e72391c4b85a5dd1f28daf4c, type: 3}
