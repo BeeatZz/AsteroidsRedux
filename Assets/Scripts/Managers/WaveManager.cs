@@ -33,12 +33,17 @@ namespace Asteroids.Managers
         [Header("Event Channels")]
         [SerializeField] private IntEventChannelSO onWaveStartedChannel;
         [SerializeField] private VoidEventChannelSO onGameOverChannel;
+        [Tooltip("Raised by asteroids and UFOs when they're destroyed, with their position.")]
+        [SerializeField] private Vector3EventChannelSO onEnemyDestroyedChannel;
+        [Tooltip("Raised when the kill that empties the wave lands, with where it happened.")]
+        [SerializeField] private Vector3EventChannelSO onWaveClearedChannel;
 
         private Camera mainCamera;
         private Coroutine ufoSpawnRoutine;
         private Coroutine waveClearRoutine;
         private int currentWave;
         private bool isGameOver;
+        private bool waveClearedRaised;
 
         private void Awake()
         {
@@ -55,12 +60,18 @@ namespace Asteroids.Managers
         {
             if (onGameOverChannel != null)
                 onGameOverChannel.OnEventRaised += HandleGameOver;
+
+            if (onEnemyDestroyedChannel != null)
+                onEnemyDestroyedChannel.OnEventRaised += HandleEnemyDestroyed;
         }
 
         private void OnDisable()
         {
             if (onGameOverChannel != null)
                 onGameOverChannel.OnEventRaised -= HandleGameOver;
+
+            if (onEnemyDestroyedChannel != null)
+                onEnemyDestroyedChannel.OnEventRaised -= HandleEnemyDestroyed;
         }
 
         private void Start()
@@ -74,11 +85,22 @@ namespace Asteroids.Managers
             StopAllCoroutines();
         }
 
+        // Enemies report their death after they've left play (and after any split fragments have
+        // spawned), so "nothing left alive" here means this kill was the one that emptied the wave.
+        private void HandleEnemyDestroyed(Vector3 position)
+        {
+            if (waveClearedRaised || AnyEnemiesAlive()) return;
+
+            waveClearedRaised = true;
+            onWaveClearedChannel?.RaiseEvent(position);
+        }
+
         private void StartWave(int waveNumber)
         {
             if (isGameOver) return;
 
             currentWave = waveNumber;
+            waveClearedRaised = false;
             onWaveStartedChannel?.RaiseEvent(currentWave);
 
             SpawnAsteroidWave();
@@ -109,21 +131,31 @@ namespace Asteroids.Managers
             }
         }
 
-        // Polls for live Asteroid instances rather than counting spawn/destroy events,
-        // so split fragments (spawned outside this manager, by Asteroid itself) are
-        // always accounted for correctly without a second bookkeeping path.
+        // Polls for live enemies rather than counting spawn/destroy events, so split fragments
+        // (spawned outside this manager, by Asteroid itself) are always accounted for correctly
+        // without a second bookkeeping path. A wave needs its UFOs cleared too, not just asteroids.
         private IEnumerator WatchForWaveClear()
         {
             yield return null;
 
             float checkInterval = config != null ? config.WaveClearCheckInterval : 0.5f;
-            while (FindObjectsByType<Asteroid>(FindObjectsInactive.Exclude, FindObjectsSortMode.None).Length > 0)
+            while (AnyEnemiesAlive())
             {
                 yield return new WaitForSeconds(checkInterval);
             }
 
             yield return new WaitForSeconds(config != null ? config.WaveStartDelay : 2f);
             StartWave(currentWave + 1);
+        }
+
+        private static bool AnyAsteroidsAlive()
+        {
+            return FindAnyObjectByType<Asteroid>(FindObjectsInactive.Exclude) != null;
+        }
+
+        private static bool AnyEnemiesAlive()
+        {
+            return AnyAsteroidsAlive() || FindAnyObjectByType<UfoController>(FindObjectsInactive.Exclude) != null;
         }
 
         private void RestartUfoTimer()
@@ -144,7 +176,9 @@ namespace Asteroids.Managers
 
                 yield return new WaitForSeconds(interval);
 
-                if (currentWave >= config.FirstUfoWave)
+                // Once the asteroids are gone the wave is only waiting on its UFOs, so no new ones
+                // join; otherwise a wave could be kept open indefinitely.
+                if (currentWave >= config.FirstUfoWave && AnyAsteroidsAlive())
                 {
                     SpawnUfo();
                 }

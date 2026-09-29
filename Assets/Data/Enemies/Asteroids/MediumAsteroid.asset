@@ -19,3 +19,4 @@ MonoBehaviour:
   maxRotationSpeed: 100
   nextSizePrefab: {fileID: 7536401101024097454, guid: ba50550d54fb463f84a5ba6438142730, type: 3}
   spawnCountOnDestroy: 2
+  destroyEffect: {fileID: 11400000, guid: 0f8e8c9a52e55ad47ac5f82803a42771, type: 2}

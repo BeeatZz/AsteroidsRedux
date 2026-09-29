@@ -180,3 +180,4 @@ MonoBehaviour:
   m_EditorClassIdentifier:
   config: {fileID: 11400000, guid: c9178ea71f2444a419b98257dfb7ab87, type: 2}
   onScoreAddedChannel: {fileID: 11400000, guid: 50dfe38b48f8614459bd260736385d89, type: 2}
+  onEnemyDestroyedChannel: {fileID: 11400000, guid: 9aacd56e7723b2940b99aba8117948e8, type: 2}

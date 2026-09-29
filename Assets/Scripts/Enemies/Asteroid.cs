@@ -17,6 +17,8 @@ namespace Asteroids.Enemies
 
         [Header("Event Channels")]
         [SerializeField] private IntEventChannelSO onScoreAddedChannel;
+        [Tooltip("Raised with this enemy's position once it's out of play, however it died.")]
+        [SerializeField] private Vector3EventChannelSO onEnemyDestroyedChannel;
 
         private Rigidbody2D rb;
         private PooledObject pooledObject;
@@ -128,7 +130,11 @@ namespace Asteroids.Enemies
                 config.DestroyEffect.Play(transform.position);
             }
 
+            Vector3 position = transform.position;
             pooledObject.ReturnToPool();
+
+            // Raised last, so listeners counting what's left see the fragments but not this asteroid.
+            onEnemyDestroyedChannel?.RaiseEvent(position);
         }
 
         private void WrapScreen()

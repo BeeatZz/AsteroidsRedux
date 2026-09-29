@@ -293,7 +293,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   defaultSpeed: 12
   defaultLifetime: 3
+  defaultDamage: 1
   trailRenderer: {fileID: 0}
+  impactEffect: {fileID: 11400000, guid: ce58a53fc6cb84343993851ab4a48c30, type: 2}
 --- !u!58 &6048223737757343683
 CircleCollider2D:
   m_ObjectHideFlags: 0

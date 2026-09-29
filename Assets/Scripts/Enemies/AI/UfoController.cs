@@ -15,6 +15,8 @@ namespace Asteroids.Enemies.AI
 
         [Header("Event Channels")]
         [SerializeField] private IntEventChannelSO onScoreAddedChannel;
+        [Tooltip("Raised with this enemy's position once it's out of play, however it died.")]
+        [SerializeField] private Vector3EventChannelSO onEnemyDestroyedChannel;
 
         [Header("Combat Setup")]
         [SerializeField] private GameObject bulletPrefab;
@@ -131,14 +133,21 @@ namespace Asteroids.Enemies.AI
                 config.DestroyEffect.Play(transform.position);
             }
 
+            Vector3 position = transform.position;
+
             if (pooledObject != null && !string.IsNullOrEmpty(pooledObject.PoolKey))
             {
                 pooledObject.ReturnToPool();
             }
             else
             {
+                // Destroy only takes effect at the end of the frame; deactivating first takes the
+                // UFO out of play now, so listeners counting what's left don't still see it.
+                gameObject.SetActive(false);
                 Destroy(gameObject);
             }
+
+            onEnemyDestroyedChannel?.RaiseEvent(position);
         }
 
         public void Move(Vector2 direction)
