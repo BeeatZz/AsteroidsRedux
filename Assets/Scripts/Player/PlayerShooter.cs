@@ -18,13 +18,11 @@ namespace Asteroids.Player
         [SerializeField] private AudioSource audioSource;
 
         private float nextFireTime;
+        private PlayerHyperspace hyperspace;
 
-        private void Start()
+        private void Awake()
         {
-            if (weaponConfig != null && weaponConfig.BulletPrefab != null && ObjectPool.Instance != null)
-            {
-                ObjectPool.Instance.Prewarm(weaponConfig.BulletPrefab, 15);
-            }
+            hyperspace = GetComponent<PlayerHyperspace>();
         }
 
         private void Update()
@@ -43,6 +41,7 @@ namespace Asteroids.Player
             // Update still runs while Time.timeScale is 0 (paused/game over), and Time.time freezes
             // with it, so the cooldown check alone can't block fire input during a pause.
             if (Time.timeScale <= 0f || weaponConfig == null || Time.time < nextFireTime) return;
+            if (hyperspace != null && hyperspace.IsInHyperspace) return;
 
             nextFireTime = Time.time + weaponConfig.FireRate;
 

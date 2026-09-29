@@ -53,6 +53,9 @@ namespace Asteroids.Enemies.AI
             pooledObject = GetComponent<PooledObject>();
             mainCamera = Camera.main;
 
+            // Normally set on spawn; covers a UFO placed directly in a scene.
+            currentHealth = config != null ? config.Health : 1;
+
             StateMachine = new StateMachine();
             EntryState = new UfoEntryState(this, StateMachine);
             EngageState = new UfoEngageState(this, StateMachine);
@@ -96,12 +99,8 @@ namespace Asteroids.Enemies.AI
         {
             if (collision.CompareTag("Bullet"))
             {
-                int incomingDamage = collision.TryGetComponent<Bullet>(out var bullet) ? bullet.Damage : 1;
-
-                if (collision.TryGetComponent<PooledObject>(out var bulletPoolable) && !string.IsNullOrEmpty(bulletPoolable.PoolKey))
-                {
-                    bulletPoolable.ReturnToPool();
-                }
+                int incomingDamage = 1;
+                if (collision.TryGetComponent<Bullet>(out var bullet) && !bullet.TryResolveHit(out incomingDamage)) return;
 
                 TakeDamage(incomingDamage);
             }
@@ -109,6 +108,10 @@ namespace Asteroids.Enemies.AI
 
         public void TakeDamage(int amount, bool awardScore = true)
         {
+            // Already destroyed earlier this physics step (e.g. two bullets landing at once);
+            // without this it would score and explode a second time.
+            if (currentHealth <= 0) return;
+
             currentHealth -= amount;
             if (currentHealth <= 0)
             {
@@ -121,6 +124,11 @@ namespace Asteroids.Enemies.AI
             if (awardScore && onScoreAddedChannel != null && config != null)
             {
                 onScoreAddedChannel.RaiseEvent(config.ScoreValue);
+            }
+
+            if (config != null && config.DestroyEffect != null)
+            {
+                config.DestroyEffect.Play(transform.position);
             }
 
             if (pooledObject != null && !string.IsNullOrEmpty(pooledObject.PoolKey))

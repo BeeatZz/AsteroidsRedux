@@ -14,10 +14,21 @@ namespace Asteroids.Managers
         [SerializeField] private int startingLives = 3;
         [SerializeField] private float respawnDelay = 2f;
 
+        [Header("Extra Lives")]
+        [Tooltip("A bonus life is awarded every time the score passes a multiple of this value.")]
+        [SerializeField] private int extraLifeScoreInterval = 10000;
+        [Tooltip("Bonus lives stop being awarded once the player has this many.")]
+        [SerializeField] private int maxLives = 9;
+
+        [Header("Scenes")]
+        [Tooltip("Scene loaded by ReturnToMainMenu. Must be added to File > Build Profiles > Scene List.")]
+        [SerializeField] private string mainMenuSceneName = "MainMenu";
+
         [Header("Event Channels")]
         [SerializeField] private VoidEventChannelSO onPlayerDeathChannel;
         [SerializeField] private IntEventChannelSO onLivesChangedChannel;
         [SerializeField] private VoidEventChannelSO onGameOverChannel;
+        [SerializeField] private IntEventChannelSO onScoreChangedChannel;
 
         private GameObject playerObject;
         private Transform playerTransform;
@@ -27,6 +38,7 @@ namespace Asteroids.Managers
         private Quaternion spawnRotation;
 
         private int currentLives;
+        private int nextExtraLifeScore;
 
         private void Awake()
         {
@@ -42,12 +54,18 @@ namespace Asteroids.Managers
         {
             if (onPlayerDeathChannel != null)
                 onPlayerDeathChannel.OnEventRaised += HandlePlayerDeath;
+
+            if (onScoreChangedChannel != null)
+                onScoreChangedChannel.OnEventRaised += HandleScoreChanged;
         }
 
         private void OnDisable()
         {
             if (onPlayerDeathChannel != null)
                 onPlayerDeathChannel.OnEventRaised -= HandlePlayerDeath;
+
+            if (onScoreChangedChannel != null)
+                onScoreChangedChannel.OnEventRaised -= HandleScoreChanged;
         }
 
         private void Start()
@@ -55,6 +73,7 @@ namespace Asteroids.Managers
             CachePlayer();
 
             currentLives = startingLives;
+            nextExtraLifeScore = extraLifeScoreInterval;
             onLivesChangedChannel?.RaiseEvent(currentLives);
         }
 
@@ -88,6 +107,24 @@ namespace Asteroids.Managers
             }
         }
 
+        private void HandleScoreChanged(int score)
+        {
+            // Score can still tick up after the last ship dies (e.g. a stray bullet landing).
+            if (extraLifeScoreInterval <= 0 || currentLives <= 0) return;
+
+            // Loop so a single large award that crosses several thresholds grants each life.
+            while (score >= nextExtraLifeScore)
+            {
+                nextExtraLifeScore += extraLifeScoreInterval;
+
+                if (currentLives < maxLives)
+                {
+                    currentLives++;
+                    onLivesChangedChannel?.RaiseEvent(currentLives);
+                }
+            }
+        }
+
         private IEnumerator RespawnPlayerAfterDelay()
         {
             yield return new WaitForSeconds(respawnDelay);
@@ -106,7 +143,7 @@ namespace Asteroids.Managers
 
             playerTransform.SetPositionAndRotation(spawnPosition, spawnRotation);
             playerObject.SetActive(true);
-            playerHealth?.BeginInvincibility();
+            playerHealth?.OnRespawned();
         }
 
         private void TriggerGameOver()
@@ -119,6 +156,22 @@ namespace Asteroids.Managers
         {
             Time.timeScale = 1f;
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+
+        public void ReturnToMainMenu()
+        {
+            // Checked up front so the button fails with a clear message (and the game stays
+            // paused) until the main menu scene exists and is in the build.
+            if (!Application.CanStreamedLevelBeLoaded(mainMenuSceneName))
+            {
+                Debug.LogWarning($"Main menu scene '{mainMenuSceneName}' isn't in the build's scene list yet.", this);
+                return;
+            }
+
+            // Both survive scene loads, and the menu scene has no PauseManager to reset them.
+            Time.timeScale = 1f;
+            AudioListener.pause = false;
+            SceneManager.LoadScene(mainMenuSceneName);
         }
     }
 }

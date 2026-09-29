@@ -17,7 +17,5 @@ MonoBehaviour:
   maxSpeed: 12
   linearDrag: 0.4
   thrustParticlesPrefab: {fileID: 0}
-  explosionParticlesPrefab: {fileID: 0}
   thrustAudioClip: {fileID: 0}
-  deathAudioClip: {fileID: 0}
   audioFadeSpeed: 5
