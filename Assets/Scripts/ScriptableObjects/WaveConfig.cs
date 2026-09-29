@@ -28,7 +28,14 @@ namespace Asteroids.ScriptableObjects
         [SerializeField] private float minUfoFireRate = 0.6f;
 
         [Header("Pacing")]
+        [Tooltip("Seconds of game time from a wave being cleared to the next wave's banner. " +
+                 "Keep it longer than the shockwave (0.8 s) so the banner comes in after it.")]
+        [Min(0f)]
         [SerializeField] private float waveStartDelay = 2f;
+        [Tooltip("Seconds from the wave banner appearing to the first asteroid drifting in, " +
+                 "so the banner has the screen to itself.")]
+        [Min(0f)]
+        [SerializeField] private float waveIntroDuration = 1.5f;
         [SerializeField] private float waveClearCheckInterval = 0.5f;
         [Tooltip("How far outside the screen UFOs spawn (viewport fraction). Asteroids use their own size instead.")]
         [SerializeField] private float spawnEdgePadding = 0.1f;
@@ -49,6 +56,7 @@ namespace Asteroids.ScriptableObjects
         public float MinUfoFireRate => minUfoFireRate;
 
         public float WaveStartDelay => waveStartDelay;
+        public float WaveIntroDuration => waveIntroDuration;
         public float WaveClearCheckInterval => waveClearCheckInterval;
         public float SpawnEdgePadding => spawnEdgePadding;
     }

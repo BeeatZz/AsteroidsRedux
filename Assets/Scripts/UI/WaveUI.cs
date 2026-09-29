@@ -5,10 +5,10 @@ using Asteroids.Events;
 
 namespace Asteroids.UI
 {
-    /* Shows the wave number: an optional corner label that always shows the current wave, and a
-     * banner that fades in, holds and fades out each time a new wave starts. Lives on the Canvas
-     * like the other UI scripts; the banner object can start switched off.
-     * Timing is unscaled, so the wave-clear slow motion doesn't drag the banner out.
+    /* Announces each new wave with a banner in the middle of the screen that fades in, holds and
+     * fades out. Lives on the Canvas like the other UI scripts; the banner object can start
+     * switched off. WaveManager raises the wave start after the shockwave and slow motion are
+     * over, so this runs on game time and simply freezes with the pause menu.
      */
     public class WaveUI : MonoBehaviour
     {
@@ -16,16 +16,15 @@ namespace Asteroids.UI
         [SerializeField] private IntEventChannelSO onWaveStartedChannel;
 
         [Header("UI Elements")]
-        [Tooltip("Optional. Always shows the current wave, e.g. in a corner of the HUD.")]
-        [SerializeField] private TextMeshProUGUI waveLabel;
-        [Tooltip("Optional. Announces each new wave in the middle of the screen.")]
         [SerializeField] private TextMeshProUGUI waveBanner;
 
         [Header("Banner")]
+        [Tooltip("{0} is replaced with the wave number.")]
+        [SerializeField] private string bannerFormat = "WAVE {0}";
         [Min(0f)]
-        [SerializeField] private float fadeInDuration = 0.3f;
+        [SerializeField] private float fadeInDuration = 0.4f;
         [Min(0f)]
-        [SerializeField] private float holdDuration = 1.2f;
+        [SerializeField] private float holdDuration = 1f;
         [Min(0f)]
         [SerializeField] private float fadeOutDuration = 0.6f;
 
@@ -59,26 +58,20 @@ namespace Asteroids.UI
 
         private void HandleWaveStarted(int waveNumber)
         {
-            if (waveLabel != null)
-            {
-                waveLabel.text = $"WAVE {waveNumber}";
-            }
+            if (waveBanner == null) return;
 
-            if (waveBanner != null)
-            {
-                if (bannerRoutine != null) StopCoroutine(bannerRoutine);
-                bannerRoutine = StartCoroutine(ShowBanner(waveNumber));
-            }
+            if (bannerRoutine != null) StopCoroutine(bannerRoutine);
+            bannerRoutine = StartCoroutine(ShowBanner(waveNumber));
         }
 
         private IEnumerator ShowBanner(int waveNumber)
         {
-            waveBanner.text = $"WAVE {waveNumber}";
+            waveBanner.text = string.Format(bannerFormat, waveNumber);
             waveBanner.alpha = 0f;
             waveBanner.gameObject.SetActive(true);
 
             yield return Fade(0f, 1f, fadeInDuration);
-            yield return new WaitForSecondsRealtime(holdDuration);
+            yield return new WaitForSeconds(holdDuration);
             yield return Fade(1f, 0f, fadeOutDuration);
 
             waveBanner.gameObject.SetActive(false);
@@ -87,9 +80,11 @@ namespace Asteroids.UI
 
         private IEnumerator Fade(float from, float to, float duration)
         {
-            for (float elapsed = 0f; elapsed < duration; elapsed += Time.unscaledDeltaTime)
+            for (float elapsed = 0f; elapsed < duration; elapsed += Time.deltaTime)
             {
-                waveBanner.alpha = Mathf.Lerp(from, to, elapsed / duration);
+                // Eased, so it glides in and out rather than ramping linearly.
+                float t = Mathf.SmoothStep(0f, 1f, elapsed / duration);
+                waveBanner.alpha = Mathf.Lerp(from, to, t);
                 yield return null;
             }
 
