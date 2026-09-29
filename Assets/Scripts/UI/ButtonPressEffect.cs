@@ -9,11 +9,12 @@ namespace Asteroids.UI
     /* Makes a pressed button feel physically pushed in: its label and icons drop down by the depth
      * of the button art, and the whole button darkens slightly. Works alongside the Button's own
      * Sprite Swap transition, which still handles the pressed sprite.
-     * Like Button, it only looks pressed while the pointer is held down over it.
+     * Like Button's own pressed state, it stays pressed for as long as the pointer is held down,
+     * even if it's dragged off the button, so the label never comes apart from the sprite.
      */
     [RequireComponent(typeof(Selectable))]
     public class ButtonPressEffect : MonoBehaviour,
-        IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler, ISubmitHandler
+        IPointerDownHandler, IPointerUpHandler, ISubmitHandler
     {
         [Tooltip("How far the content drops, as a fraction of the button's height. The Kenney depth " +
                  "buttons have an 8px lip on a 128px sprite, which is 0.0625.")]
@@ -31,7 +32,6 @@ namespace Asteroids.UI
         private Selectable selectable;
         private RectTransform rectTransform;
         private bool isPointerDown;
-        private bool isPointerInside;
         private bool isPressedLook;
         private Coroutine submitRoutine;
 
@@ -51,7 +51,6 @@ namespace Asteroids.UI
         private void OnDisable()
         {
             isPointerDown = false;
-            isPointerInside = false;
             submitRoutine = null;
             SetPressedLook(false);
         }
@@ -67,18 +66,6 @@ namespace Asteroids.UI
         {
             if (eventData.button != PointerEventData.InputButton.Left) return;
             isPointerDown = false;
-            Refresh();
-        }
-
-        public void OnPointerEnter(PointerEventData eventData)
-        {
-            isPointerInside = true;
-            Refresh();
-        }
-
-        public void OnPointerExit(PointerEventData eventData)
-        {
-            isPointerInside = false;
             Refresh();
         }
 
@@ -101,7 +88,7 @@ namespace Asteroids.UI
         private void Refresh()
         {
             if (submitRoutine != null) return;
-            SetPressedLook(isPointerDown && isPointerInside && selectable.IsInteractable());
+            SetPressedLook(isPointerDown && selectable.IsInteractable());
         }
 
         private void SetPressedLook(bool pressed)
