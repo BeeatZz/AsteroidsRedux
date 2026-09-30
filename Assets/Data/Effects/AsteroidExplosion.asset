@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: AsteroidExplosion
   m_EditorClassIdentifier: 
   prefab: {fileID: 6333344275886261531, guid: 68c340fd4eb7d8f488d921e12c1df5f0, type: 3}
-  clips: []
+  clips:
+  - {fileID: 8300000, guid: 5f01bfc1389a1824e9be72a5f4ffe1fa, type: 3}
   volume: 1
   pitchRange: {x: 0.9, y: 1.1}
   maxConcurrentVoices: 4

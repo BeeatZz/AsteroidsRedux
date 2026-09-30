@@ -12,6 +12,8 @@ namespace Asteroids.Audio
 
         [Header("Default Clips")]
         [SerializeField] private AudioClip clickClip;
+        [Tooltip("Optional. Played when the pointer moves onto a button.")]
+        [SerializeField] private AudioClip hoverClip;
 
         private AudioSource audioSource;
 
@@ -32,6 +34,11 @@ namespace Asteroids.Audio
         public void PlayClick()
         {
             Play(clickClip);
+        }
+
+        public void PlayHover()
+        {
+            Play(hoverClip);
         }
 
         public void Play(AudioClip clip)

@@ -41,9 +41,13 @@ namespace Asteroids.Managers
         private Camera mainCamera;
         private Coroutine ufoSpawnRoutine;
         private Coroutine waveClearRoutine;
+        private Coroutine asteroidSpawnRoutine;
         private int currentWave;
         private bool isGameOver;
         private bool waveClearedRaised;
+        // True while a wave's asteroids are still drifting in; the wave can't be cleared until
+        // they've all arrived, even if the player destroys every one that's out so far.
+        private bool isSpawningWave;
 
         private void Awake()
         {
@@ -89,7 +93,7 @@ namespace Asteroids.Managers
         // spawned), so "nothing left alive" here means this kill was the one that emptied the wave.
         private void HandleEnemyDestroyed(Vector3 position)
         {
-            if (waveClearedRaised || AnyEnemiesAlive()) return;
+            if (waveClearedRaised || isSpawningWave || AnyEnemiesAlive()) return;
 
             waveClearedRaised = true;
             onWaveClearedChannel?.RaiseEvent(position);
@@ -101,34 +105,55 @@ namespace Asteroids.Managers
 
             currentWave = waveNumber;
             waveClearedRaised = false;
+            isSpawningWave = true;
             onWaveStartedChannel?.RaiseEvent(currentWave);
 
-            SpawnAsteroidWave();
-            RestartUfoTimer();
+            if (asteroidSpawnRoutine != null) StopCoroutine(asteroidSpawnRoutine);
+            asteroidSpawnRoutine = StartCoroutine(SpawnAsteroidWave());
 
             if (waveClearRoutine != null) StopCoroutine(waveClearRoutine);
             waveClearRoutine = StartCoroutine(WatchForWaveClear());
         }
 
-        private void SpawnAsteroidWave()
+        // After the wave banner's intro, sends the wave's asteroids in one at a time, each drifting
+        // in from just off-screen. The UFO timer starts with them, so it counts from their arrival.
+        private IEnumerator SpawnAsteroidWave()
         {
-            if (config == null || asteroidPrefab == null || ObjectPool.Instance == null) return;
-
-            int count = config.BaseAsteroidCount + config.AsteroidCountIncreasePerWave * (currentWave - 1);
-            float speedMultiplier = Mathf.Min(
-                1f + config.AsteroidSpeedIncreasePerWave * (currentWave - 1),
-                config.MaxAsteroidSpeedMultiplier);
-
-            for (int i = 0; i < count; i++)
+            if (config != null && config.WaveIntroDuration > 0f)
             {
-                Vector3 spawnPos = SpawnPoints.RandomEdgePosition(mainCamera, config.SpawnEdgePadding);
-                GameObject asteroid = ObjectPool.Instance.Get(asteroidPrefab, spawnPos, Quaternion.identity);
+                yield return new WaitForSeconds(config.WaveIntroDuration);
+            }
 
-                if (asteroid != null && asteroid.TryGetComponent<Asteroid>(out var asteroidComponent))
+            RestartUfoTimer();
+
+            if (config != null && asteroidPrefab != null && ObjectPool.Instance != null)
+            {
+                int count = config.BaseAsteroidCount + config.AsteroidCountIncreasePerWave * (currentWave - 1);
+                float speedMultiplier = Mathf.Min(
+                    1f + config.AsteroidSpeedIncreasePerWave * (currentWave - 1),
+                    config.MaxAsteroidSpeedMultiplier);
+
+                for (int i = 0; i < count; i++)
                 {
-                    asteroidComponent.SetSpeedMultiplier(speedMultiplier);
+                    if (i > 0 && config.AsteroidSpawnInterval > 0f)
+                    {
+                        yield return new WaitForSeconds(config.AsteroidSpawnInterval);
+                    }
+
+                    // Handed out off-screen; EnterFromOffscreen then picks the exact edge spot.
+                    Vector3 spawnPos = SpawnPoints.RandomEdgePosition(mainCamera, config.SpawnEdgePadding);
+                    GameObject asteroid = ObjectPool.Instance.Get(asteroidPrefab, spawnPos, Quaternion.identity);
+
+                    if (asteroid != null && asteroid.TryGetComponent<Asteroid>(out var asteroidComponent))
+                    {
+                        asteroidComponent.SetSpeedMultiplier(speedMultiplier);
+                        asteroidComponent.EnterFromOffscreen(config.AsteroidAimInset);
+                    }
                 }
             }
+
+            isSpawningWave = false;
+            asteroidSpawnRoutine = null;
         }
 
         // Polls for live enemies rather than counting spawn/destroy events, so split fragments
@@ -138,12 +163,22 @@ namespace Asteroids.Managers
         {
             yield return null;
 
+            // Stops the moment HandleEnemyDestroyed sees the last kill, so the delay below always
+            // starts with the shockwave; the slower poll only catches waves that end any other way.
             float checkInterval = config != null ? config.WaveClearCheckInterval : 0.5f;
-            while (AnyEnemiesAlive())
+            float nextCheck = 0f;
+            while (!waveClearedRaised)
             {
-                yield return new WaitForSeconds(checkInterval);
+                if (Time.time >= nextCheck)
+                {
+                    if (!isSpawningWave && !AnyEnemiesAlive()) break;
+                    nextCheck = Time.time + checkInterval;
+                }
+
+                yield return null;
             }
 
+            // Game time, like the shockwave, so this also waits out slow motion and the pause menu.
             yield return new WaitForSeconds(config != null ? config.WaveStartDelay : 2f);
             StartWave(currentWave + 1);
         }

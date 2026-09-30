@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: UfoExplosion
   m_EditorClassIdentifier: 
   prefab: {fileID: 411283495915899020, guid: 8c364458db0dcb144b7deee5a2451242, type: 3}
-  clips: []
+  clips:
+  - {fileID: 8300000, guid: 06510d174a01ad44297014fa012f2210, type: 3}
   volume: 1
   pitchRange: {x: 0.9, y: 1.1}
   maxConcurrentVoices: 4

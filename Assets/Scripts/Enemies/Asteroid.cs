@@ -72,6 +72,23 @@ namespace Asteroids.Enemies
             }
         }
 
+        /* Moves a freshly spawned asteroid to just past a random screen edge and points it at the
+         * middle of the screen, so it drifts into view instead of appearing in play. Call after
+         * spawning (OnSpawnFromPool measures the wrap padding this uses); speed is kept.
+         * aimInset keeps the aim point that far in from the edges (viewport fraction, 0-0.5).
+         */
+        public void EnterFromOffscreen(float aimInset = 0.25f)
+        {
+            if (mainCamera == null) return;
+
+            Vector3 position = SpawnPoints.JustOffscreen(mainCamera, wrapPadding);
+            transform.position = position;
+            rb.position = position;
+
+            Vector2 toTarget = SpawnPoints.RandomOnScreen(mainCamera, aimInset) - position;
+            rb.linearVelocity = toTarget.normalized * rb.linearVelocity.magnitude;
+        }
+
         private void Update()
         {
             transform.Rotate(0, 0, rotSpeed * Time.deltaTime);

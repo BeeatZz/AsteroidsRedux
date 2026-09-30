@@ -15,8 +15,6 @@ namespace Asteroids.ScriptableObjects
 
         [Header("Visuals & Audio")]
         [SerializeField] private GameObject bulletPrefab;
-        [SerializeField] private GameObject muzzleFlashPrefab;
-        [SerializeField] private GameObject impactFXPrefab;
         [SerializeField] private AudioClip shootAudioClip;
 
         public float FireRate => fireRate;
@@ -25,8 +23,6 @@ namespace Asteroids.ScriptableObjects
         public int Damage => damage;
 
         public GameObject BulletPrefab => bulletPrefab;
-        public GameObject MuzzleFlashPrefab => muzzleFlashPrefab;
-        public GameObject ImpactFXPrefab => impactFXPrefab;
         public AudioClip ShootAudioClip => shootAudioClip;
     }
 }
