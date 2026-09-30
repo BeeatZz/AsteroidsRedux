@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: ShipRespawn
   m_EditorClassIdentifier: 
   prefab: {fileID: 3488134355522798212, guid: eaf4951490ac43e4bbb47c406373dc2c, type: 3}
-  clips: []
+  clips:
+  - {fileID: 8300000, guid: 5f047e84cf7345040b3b1b00eeca38a9, type: 3}
   volume: 1
   pitchRange: {x: 0.9, y: 1.1}
   maxConcurrentVoices: 4

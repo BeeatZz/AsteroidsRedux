@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: HyperspaceExit
   m_EditorClassIdentifier: 
   prefab: {fileID: 6788859666384656066, guid: 0ca9e90767a31a14f92e121b15def05e, type: 3}
-  clips: []
+  clips:
+  - {fileID: 8300000, guid: 09ee23bf92e91b04883d76b9fc8398a4, type: 3}
   volume: 1
   pitchRange: {x: 0.9, y: 1.1}
   maxConcurrentVoices: 4

@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: ShipDeath
   m_EditorClassIdentifier: 
   prefab: {fileID: 1311891613601061411, guid: 7d1d578b63b376a428bb74dae105e2f5, type: 3}
-  clips: []
+  clips:
+  - {fileID: 8300000, guid: 5f01bfc1389a1824e9be72a5f4ffe1fa, type: 3}
   volume: 1
   pitchRange: {x: 0.9, y: 1.1}
   maxConcurrentVoices: 4
