@@ -11,11 +11,13 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b7ab655d07674b3992a00d9ce9447275, type: 3}
   m_Name: DefaultWaveConfig
-  m_EditorClassIdentifier:
-  baseAsteroidCount: 4
-  asteroidCountIncreasePerWave: 2
-  asteroidSpeedIncreasePerWave: 0.15
+  m_EditorClassIdentifier: 
+  baseAsteroidCount: 3
+  asteroidCountIncreasePerWave: 1
+  asteroidSpeedIncreasePerWave: 0.08
   maxAsteroidSpeedMultiplier: 2.5
+  asteroidSpawnInterval: 0.4
+  asteroidAimInset: 0.25
   firstUfoWave: 2
   ufoSpawnIntervalBase: 20
   ufoSpawnIntervalDecreasePerWave: 1.5
@@ -23,6 +25,7 @@ MonoBehaviour:
   ufoFireRateBase: 1.8
   ufoFireRateDecreasePerWave: 0.15
   minUfoFireRate: 0.6
-  waveStartDelay: 2
+  waveStartDelay: 2.5
+  waveIntroDuration: 2
   waveClearCheckInterval: 0.5
   spawnEdgePadding: 0.1
