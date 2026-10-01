@@ -17,6 +17,15 @@ MonoBehaviour:
   moveSpeed: 4.5
   minRotationSpeed: 20
   maxRotationSpeed: 100
+  sprites:
+  - {fileID: 4596883188560925386, guid: 10a6650eb291a2c4aaf6d37b8ac54e86, type: 3}
+  - {fileID: -1957121737005926835, guid: 78c0accf3cebb21488bbca62561e2ebf, type: 3}
+  - {fileID: 959803505507294820, guid: 6893312b4bc05d243b4bb7eef78be632, type: 3}
+  - {fileID: 1541252945735965799, guid: d22a9a5e0da4b2d45bb648a68162fa51, type: 3}
   nextSizePrefab: {fileID: 7536401101024097454, guid: ba50550d54fb463f84a5ba6438142730, type: 3}
   spawnCountOnDestroy: 2
   destroyEffect: {fileID: 11400000, guid: 0f8e8c9a52e55ad47ac5f82803a42771, type: 2}
+  destroyShake:
+    strength: 0.2
+    duration: 0.25
+    frequency: 25

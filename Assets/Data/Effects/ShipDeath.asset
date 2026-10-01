@@ -16,5 +16,5 @@ MonoBehaviour:
   clips:
   - {fileID: 8300000, guid: 5f01bfc1389a1824e9be72a5f4ffe1fa, type: 3}
   volume: 1
-  pitchRange: {x: 0.9, y: 1.1}
+  pitchRange: {x: 0.7, y: 0.8}
   maxConcurrentVoices: 4
