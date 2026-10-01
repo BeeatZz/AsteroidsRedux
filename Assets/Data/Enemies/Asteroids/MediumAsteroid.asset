@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scoreValue: 150
   health: 1
-  moveSpeed: 4.5
+  moveSpeed: 4
   minRotationSpeed: 20
   maxRotationSpeed: 100
   sprites:

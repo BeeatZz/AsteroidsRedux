@@ -16,6 +16,14 @@ MonoBehaviour:
   screenPadding: 0.05
   fireRate: 1.8
   scoreValue: 200
-  health: 3
+  health: 1
+  minDirectionChangeTime: 1.2
+  maxDirectionChangeTime: 2.5
+  chaseWeight: 0.6
+  spinSpeed: 90
   maxAudioDistance: 0.5
   destroyEffect: {fileID: 11400000, guid: d510166eccad7ce4e86ab7e461d8ba7d, type: 2}
+  destroyShake:
+    strength: 0.5
+    duration: 0.35
+    frequency: 25
