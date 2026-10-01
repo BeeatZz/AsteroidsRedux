@@ -234,7 +234,5 @@ Assets/
 ## Credits
 
 - Visual and sound assets: [Kenney](https://kenney.nl) (CC0)
-- Some sound effects: [Freesound](https://freesound.org) <!-- TODO: add the individual sound names, authors and links -->
-
-<!-- Remove the vague Freesound line once the links are added. Many Freesound sounds are CC-BY and require attribution. -->
-
+- Some sound effects: [Freesound](https://freesound.org)
+- Built with the help of [Claude Code](https://claude.com/claude-code) for code and documentation
