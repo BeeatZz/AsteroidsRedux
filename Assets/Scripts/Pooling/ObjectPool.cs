@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -15,10 +16,17 @@ namespace Asteroids.Pooling
         public static ObjectPool Instance { get; private set; }
 
         [SerializeField] private List<PoolEntry> prewarmOnStart = new();
+        [Tooltip("How many instances the prewarm creates per frame. It's spread out so a loading screen " +
+                 "can keep animating while the pool fills; lower is smoother, higher is quicker.")]
+        [Min(1)]
+        [SerializeField] private int prewarmPerFrame = 8;
 
         private readonly Dictionary<string, Queue<PooledObject>> poolDictionary = new();
         private readonly Dictionary<string, GameObject> prefabLookup = new();
         private readonly Dictionary<string, int> totalCounts = new();
+
+        // True once everything in Prewarm On Start exists. The loading screen waits for this.
+        public bool IsReady { get; private set; }
 
         private void Awake()
         {
@@ -28,11 +36,31 @@ namespace Asteroids.Pooling
                 return;
             }
             Instance = this;
+        }
 
+        private IEnumerator Start()
+        {
+            // A duplicate that removed itself in Awake mustn't fill a second pool.
+            if (Instance != this) yield break;
+
+            int created = 0;
             foreach (var entry in prewarmOnStart)
             {
-                Prewarm(entry.Prefab, entry.Count);
+                if (entry.Prefab == null) continue;
+
+                string key = EnsurePool(entry.Prefab);
+                while (totalCounts[key] < entry.Count)
+                {
+                    CreateNewInstance(key, entry.Prefab);
+
+                    if (++created % prewarmPerFrame == 0)
+                    {
+                        yield return null;
+                    }
+                }
             }
+
+            IsReady = true;
         }
 
         // Tops the pool up until at least targetSize instances exist (active + pooled),
@@ -40,6 +68,16 @@ namespace Asteroids.Pooling
         public void Prewarm(GameObject prefab, int targetSize)
         {
             if (prefab == null) return;
+            string key = EnsurePool(prefab);
+
+            for (int i = totalCounts[key]; i < targetSize; i++)
+            {
+                CreateNewInstance(key, prefab);
+            }
+        }
+
+        private string EnsurePool(GameObject prefab)
+        {
             string key = GetPoolKey(prefab);
 
             if (!poolDictionary.ContainsKey(key))
@@ -49,10 +87,7 @@ namespace Asteroids.Pooling
                 totalCounts[key] = 0;
             }
 
-            for (int i = totalCounts[key]; i < targetSize; i++)
-            {
-                CreateNewInstance(key, prefab);
-            }
+            return key;
         }
 
         public GameObject Get(GameObject prefab, Vector3 position, Quaternion rotation)
@@ -74,9 +109,10 @@ namespace Asteroids.Pooling
             obj.transform.SetPositionAndRotation(position, rotation);
             obj.gameObject.SetActive(true);
 
-            foreach (var poolable in obj.GetComponents<IPoolable>())
+            IPoolable[] poolables = obj.Poolables;
+            for (int i = 0; i < poolables.Length; i++)
             {
-                poolable.OnSpawnFromPool();
+                poolables[i].OnSpawnFromPool();
             }
 
             return obj.gameObject;
@@ -88,9 +124,10 @@ namespace Asteroids.Pooling
             // same physics step), which would enqueue the same instance twice.
             if (!obj.gameObject.activeSelf) return;
 
-            foreach (var poolable in obj.GetComponents<IPoolable>())
+            IPoolable[] poolables = obj.Poolables;
+            for (int i = 0; i < poolables.Length; i++)
             {
-                poolable.OnReturnToPool();
+                poolables[i].OnReturnToPool();
             }
 
             obj.gameObject.SetActive(false);
@@ -123,4 +160,4 @@ namespace Asteroids.Pooling
             return pooledObj;
         }
     }
-}
+}

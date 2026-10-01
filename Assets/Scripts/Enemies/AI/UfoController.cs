@@ -17,10 +17,16 @@ namespace Asteroids.Enemies.AI
         [SerializeField] private IntEventChannelSO onScoreAddedChannel;
         [Tooltip("Raised with this enemy's position once it's out of play, however it died.")]
         [SerializeField] private Vector3EventChannelSO onEnemyDestroyedChannel;
+        [Tooltip("Sends the config's Destroy Shake to CameraShake.")]
+        [SerializeField] private ScreenShakeEventChannelSO onScreenShakeChannel;
 
         [Header("Combat Setup")]
         [SerializeField] private GameObject bulletPrefab;
         [SerializeField] private Transform firePoint;
+
+        [Header("Visuals")]
+        [Tooltip("Child holding the sprite. Only this spins, so the collider and fire point stay put.")]
+        [SerializeField] private Transform visual;
 
         [Header("Audio Components")]
         [SerializeField] private AudioSource engineAudioSource;
@@ -33,6 +39,7 @@ namespace Asteroids.Enemies.AI
         private Camera mainCamera;
         private int currentHealth;
         private float? fireRateOverride;
+        private float spinDirection = 1f;
 
         public StateMachine StateMachine { get; private set; }
         public UfoEntryState EntryState { get; private set; }
@@ -40,6 +47,9 @@ namespace Asteroids.Enemies.AI
 
         public UfoConfigSO Config => config;
         public float MoveSpeed => config != null ? config.MoveSpeed : 3.5f;
+        public float MinDirectionChangeTime => config != null ? config.MinDirectionChangeTime : 1.2f;
+        public float MaxDirectionChangeTime => config != null ? config.MaxDirectionChangeTime : 2.5f;
+        public float ChaseWeight => config != null ? config.ChaseWeight : 0.6f;
         public float FireRate => fireRateOverride ?? (config != null ? config.FireRate : 1.8f);
 
         // Lets a spawner (e.g. WaveManager) ramp difficulty per-wave without needing
@@ -72,6 +82,7 @@ namespace Asteroids.Enemies.AI
         public void OnSpawnFromPool()
         {
             currentHealth = config != null ? config.Health : 1;
+            spinDirection = Random.value > 0.5f ? 1f : -1f;
             FindPlayer();
             if (StateMachine != null && EntryState != null)
             {
@@ -84,12 +95,21 @@ namespace Asteroids.Enemies.AI
             if (rb != null) rb.linearVelocity = Vector2.zero;
             if (engineAudioSource != null) engineAudioSource.Stop();
             fireRateOverride = null;
+            if (visual != null) visual.localRotation = Quaternion.identity;
         }
 
         private void Update()
         {
             StateMachine.Update();
             UpdateAudioVolume();
+            Spin();
+        }
+
+        // Game time, so the spin freezes on pause and slows with the wave-clear slow motion.
+        private void Spin()
+        {
+            if (visual == null || config == null) return;
+            visual.Rotate(0f, 0f, config.SpinSpeed * spinDirection * Time.deltaTime);
         }
 
         private void FixedUpdate()
@@ -131,6 +151,11 @@ namespace Asteroids.Enemies.AI
             if (config != null && config.DestroyEffect != null)
             {
                 config.DestroyEffect.Play(transform.position);
+            }
+
+            if (config != null && config.DestroyShake.IsActive)
+            {
+                onScreenShakeChannel?.RaiseEvent(config.DestroyShake);
             }
 
             Vector3 position = transform.position;

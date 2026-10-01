@@ -19,6 +19,8 @@ namespace Asteroids.Enemies
         [SerializeField] private IntEventChannelSO onScoreAddedChannel;
         [Tooltip("Raised with this enemy's position once it's out of play, however it died.")]
         [SerializeField] private Vector3EventChannelSO onEnemyDestroyedChannel;
+        [Tooltip("Sends the config's Destroy Shake to CameraShake.")]
+        [SerializeField] private ScreenShakeEventChannelSO onScreenShakeChannel;
 
         private Rigidbody2D rb;
         private PooledObject pooledObject;
@@ -43,6 +45,9 @@ namespace Asteroids.Enemies
         public void OnSpawnFromPool()
         {
             currentHealth = config != null ? config.Health : 1;
+
+            // Before the wrap padding, which is measured from the sprite.
+            PickRandomSprite();
             wrapPadding = CalculateWrapPadding();
 
             if (config != null)
@@ -141,10 +146,15 @@ namespace Asteroids.Enemies
                 }
             }
 
-            // Unlike splitting, the explosion plays for ramming kills too.
+            // Unlike splitting, the explosion and shake play for ramming kills too.
             if (config != null && config.DestroyEffect != null)
             {
                 config.DestroyEffect.Play(transform.position);
+            }
+
+            if (config != null && config.DestroyShake.IsActive)
+            {
+                onScreenShakeChannel?.RaiseEvent(config.DestroyShake);
             }
 
             Vector3 position = transform.position;
@@ -157,6 +167,20 @@ namespace Asteroids.Enemies
         private void WrapScreen()
         {
             ScreenWrapper.WrapWithWorldPadding(transform, mainCamera, wrapPadding);
+        }
+
+        private void PickRandomSprite()
+        {
+            if (spriteRenderer == null || config == null) return;
+
+            Sprite[] sprites = config.Sprites;
+            if (sprites == null || sprites.Length == 0) return;
+
+            Sprite sprite = sprites[Random.Range(0, sprites.Length)];
+            if (sprite != null)
+            {
+                spriteRenderer.sprite = sprite;
+            }
         }
 
         // Half the sprite's size in world units, so each asteroid size wraps exactly when

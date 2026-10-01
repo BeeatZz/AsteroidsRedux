@@ -2,10 +2,11 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Asteroids.Managers;
 
 namespace Asteroids.UI
 {
-    /* Title screen: Play loads the gameplay scene, Settings reuses the same SettingsUI as the
+    /* Title screen: Play loads the gameplay scene (through the loading screen), Settings reuses the same SettingsUI as the
      * pause menu, and Quit exits. Lives on the menu Canvas, like the other UI scripts.
      */
     public class MainMenuUI : MonoBehaviour
@@ -86,7 +87,14 @@ namespace Asteroids.UI
                 return;
             }
 
-            SceneManager.LoadScene(gameSceneName);
+            if (SceneLoader.Instance != null)
+            {
+                SceneLoader.Instance.LoadSceneWithLoadingScreen(gameSceneName);
+            }
+            else
+            {
+                SceneManager.LoadScene(gameSceneName);
+            }
         }
 
         private void HandleSettingsClicked()

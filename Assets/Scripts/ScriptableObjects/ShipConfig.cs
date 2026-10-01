@@ -41,6 +41,15 @@ namespace Asteroids.ScriptableObjects
         [Tooltip("Re-entry tries to avoid landing within this distance of an enemy.")]
         [SerializeField] private float hyperspaceSafeRadius = 1.5f;
 
+        [Header("Lives & Respawn")]
+        [SerializeField] private int startingLives = 3;
+        [Tooltip("Seconds between the ship being destroyed and it respawning.")]
+        [SerializeField] private float respawnDelay = 2f;
+        [Tooltip("How long the respawned ship can't be hurt, in seconds.")]
+        [SerializeField] private float invincibilityDuration = 2f;
+        [Tooltip("Seconds between blinks while invincible.")]
+        [SerializeField] private float blinkInterval = 0.1f;
+
         [Header("Effects")]
         [SerializeField] private EffectSO deathEffect;
         [SerializeField] private EffectSO respawnEffect;
@@ -48,6 +57,8 @@ namespace Asteroids.ScriptableObjects
         [SerializeField] private EffectSO hyperspaceExitEffect;
         [Tooltip("Plays where the ship reappears.")]
         [SerializeField] private EffectSO hyperspaceEnterEffect;
+        [Tooltip("Screen shake when the ship is destroyed. Strength 0 turns it off.")]
+        [SerializeField] private ScreenShakeSettings deathShake = new(0.5f, 0.5f, 20f);
 
         [Header("Audio Tuning")]
         [SerializeField] private float audioFadeSpeed = 5f;
@@ -64,9 +75,15 @@ namespace Asteroids.ScriptableObjects
         public float HyperspaceFailChance => hyperspaceFailChance;
         public float HyperspaceSafeRadius => hyperspaceSafeRadius;
 
+        public int StartingLives => startingLives;
+        public float RespawnDelay => respawnDelay;
+        public float InvincibilityDuration => invincibilityDuration;
+        public float BlinkInterval => blinkInterval;
+
         public EffectSO DeathEffect => deathEffect;
         public EffectSO RespawnEffect => respawnEffect;
         public EffectSO HyperspaceExitEffect => hyperspaceExitEffect;
         public EffectSO HyperspaceEnterEffect => hyperspaceEnterEffect;
+        public ScreenShakeSettings DeathShake => deathShake;
     }
 }
