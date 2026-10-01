@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Asteroids.Events;
 using Asteroids.Player;
+using Asteroids.ScriptableObjects;
 
 namespace Asteroids.Managers
 {
@@ -11,8 +12,8 @@ namespace Asteroids.Managers
         public static GameManager Instance { get; private set; }
 
         [Header("Config")]
-        [SerializeField] private int startingLives = 3;
-        [SerializeField] private float respawnDelay = 2f;
+        [Tooltip("Supplies starting lives and the respawn delay.")]
+        [SerializeField] private ShipConfig shipConfig;
 
         [Header("Extra Lives")]
         [Tooltip("A bonus life is awarded every time the score passes a multiple of this value.")]
@@ -72,7 +73,7 @@ namespace Asteroids.Managers
         {
             CachePlayer();
 
-            currentLives = startingLives;
+            currentLives = shipConfig != null ? shipConfig.StartingLives : 3;
             nextExtraLifeScore = extraLifeScoreInterval;
             onLivesChangedChannel?.RaiseEvent(currentLives);
         }
@@ -127,7 +128,7 @@ namespace Asteroids.Managers
 
         private IEnumerator RespawnPlayerAfterDelay()
         {
-            yield return new WaitForSeconds(respawnDelay);
+            yield return new WaitForSeconds(shipConfig != null ? shipConfig.RespawnDelay : 2f);
             RespawnPlayer();
         }
 
@@ -154,7 +155,15 @@ namespace Asteroids.Managers
 
         public void RestartGame()
         {
+            // SceneLoader resets time once the screen is black, so the game stays frozen while it fades.
+            if (SceneLoader.Instance != null)
+            {
+                SceneLoader.Instance.LoadSceneWithLoadingScreen(SceneManager.GetActiveScene().name);
+                return;
+            }
+
             Time.timeScale = 1f;
+            AudioListener.pause = false;
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 
@@ -165,6 +174,12 @@ namespace Asteroids.Managers
             if (!Application.CanStreamedLevelBeLoaded(mainMenuSceneName))
             {
                 Debug.LogWarning($"Main menu scene '{mainMenuSceneName}' isn't in the build's scene list yet.", this);
+                return;
+            }
+
+            if (SceneLoader.Instance != null)
+            {
+                SceneLoader.Instance.LoadScene(mainMenuSceneName);
                 return;
             }
 

@@ -50,12 +50,12 @@ namespace Asteroids.Enemies.AI
 
         private void ChooseEngageVector()
         {
-            directionChangeTimer = Random.Range(1.2f, 2.5f);
+            directionChangeTimer = Random.Range(ufo.MinDirectionChangeTime, ufo.MaxDirectionChangeTime);
 
             Vector2 toPlayer = ufo.GetDirectionToPlayer();
             Vector2 perpendicular = new Vector2(-toPlayer.y, toPlayer.x) * (Random.value > 0.5f ? 1f : -1f);
 
-            moveDirection = (toPlayer * 0.6f + perpendicular * 0.4f).normalized;
+            moveDirection = (toPlayer * ufo.ChaseWeight + perpendicular * (1f - ufo.ChaseWeight)).normalized;
         }
     }
 }

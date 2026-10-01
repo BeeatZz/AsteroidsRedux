@@ -31,6 +31,8 @@ namespace Asteroids.Managers
         [SerializeField] private UfoVariant[] ufoVariants;
 
         [Header("Event Channels")]
+        [Tooltip("Optional. Wave 1 waits for this (GameIntro raises it once the controls hint is gone). Empty starts wave 1 straight away.")]
+        [SerializeField] private VoidEventChannelSO onGameStartedChannel;
         [SerializeField] private IntEventChannelSO onWaveStartedChannel;
         [SerializeField] private VoidEventChannelSO onGameOverChannel;
         [Tooltip("Raised by asteroids and UFOs when they're destroyed, with their position.")]
@@ -62,6 +64,9 @@ namespace Asteroids.Managers
 
         private void OnEnable()
         {
+            if (onGameStartedChannel != null)
+                onGameStartedChannel.OnEventRaised += HandleGameStarted;
+
             if (onGameOverChannel != null)
                 onGameOverChannel.OnEventRaised += HandleGameOver;
 
@@ -71,6 +76,9 @@ namespace Asteroids.Managers
 
         private void OnDisable()
         {
+            if (onGameStartedChannel != null)
+                onGameStartedChannel.OnEventRaised -= HandleGameStarted;
+
             if (onGameOverChannel != null)
                 onGameOverChannel.OnEventRaised -= HandleGameOver;
 
@@ -80,7 +88,18 @@ namespace Asteroids.Managers
 
         private void Start()
         {
-            StartWave(1);
+            if (onGameStartedChannel == null)
+            {
+                StartWave(1);
+            }
+        }
+
+        private void HandleGameStarted()
+        {
+            if (currentWave == 0)
+            {
+                StartWave(1);
+            }
         }
 
         private void HandleGameOver()

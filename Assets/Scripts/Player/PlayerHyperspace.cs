@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Asteroids.ScriptableObjects;
 using Asteroids.Effects;
+using Asteroids.Events;
 
 namespace Asteroids.Player
 {
@@ -19,12 +20,17 @@ namespace Asteroids.Player
         [Tooltip("Keeps re-entry away from the screen edges, in viewport units (0-0.5).")]
         [SerializeField] private float viewportMargin = 0.1f;
 
+        [Header("Event Channels")]
+        [Tooltip("Optional. Jumps can't malfunction until this is raised, so the pre-game intro never costs a life.")]
+        [SerializeField] private VoidEventChannelSO onGameStartedChannel;
+
         private Rigidbody2D rb;
         private PlayerHealth playerHealth;
         private Camera mainCamera;
 
         private float nextJumpTime;
         private Coroutine jumpRoutine;
+        private bool canMalfunction;
 
         // Read by PlayerController/PlayerShooter so the ship can't steer or fire while it's gone.
         public bool IsInHyperspace { get; private set; }
@@ -34,6 +40,26 @@ namespace Asteroids.Player
             rb = GetComponent<Rigidbody2D>();
             playerHealth = GetComponent<PlayerHealth>();
             mainCamera = Camera.main;
+            canMalfunction = onGameStartedChannel == null;
+        }
+
+        // Subscribed for the ship's whole life rather than while enabled: the ship is switched off
+        // while dead, and the game can't start again after that anyway.
+        private void Start()
+        {
+            if (onGameStartedChannel != null)
+                onGameStartedChannel.OnEventRaised += HandleGameStarted;
+        }
+
+        private void OnDestroy()
+        {
+            if (onGameStartedChannel != null)
+                onGameStartedChannel.OnEventRaised -= HandleGameStarted;
+        }
+
+        private void HandleGameStarted()
+        {
+            canMalfunction = true;
         }
 
         private void OnDisable()
@@ -81,7 +107,7 @@ namespace Asteroids.Player
             nextJumpTime = Time.time + shipConfig.HyperspaceCooldown;
             jumpRoutine = null;
 
-            if (Random.value < shipConfig.HyperspaceFailChance)
+            if (canMalfunction && Random.value < shipConfig.HyperspaceFailChance)
             {
                 // Bypasses respawn invincibility on purpose: a malfunction is not a hit.
                 playerHealth.Die();

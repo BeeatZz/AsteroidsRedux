@@ -45,7 +45,9 @@ namespace Asteroids.Managers
 
         private void Update()
         {
-            if (isGameOver || Keyboard.current == null) return;
+            // Unpausing while the screen fades out to another scene would let the game run under it.
+            bool leavingScene = SceneLoader.Instance != null && SceneLoader.Instance.IsTransitioning;
+            if (isGameOver || leavingScene || Keyboard.current == null) return;
 
             if (Keyboard.current.escapeKey.wasPressedThisFrame || Keyboard.current.pKey.wasPressedThisFrame)
             {

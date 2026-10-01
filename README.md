@@ -22,7 +22,7 @@ Assets/
 └── Scripts/
     ├── Audio/        MusicPlayer, UISoundPlayer, UIButtonSound
     ├── Combat/       Bullet behavior, IDamageable
-    ├── Effects/      EffectSO, pooled one-shot VFX/SFX, slow motion and shockwave (+ editor builder)
+    ├── Effects/      EffectSO, pooled one-shot VFX/SFX, slow motion and shockwave
     ├── Enemies/      Asteroid, and UFO + its AI state machine
     ├── Events/       ScriptableObject event channels (Int, Vector3, Void)
     ├── Managers/     GameManager, PauseManager, ScoreManager, WaveManager, AudioSettingsManager
@@ -49,7 +49,7 @@ The UFO enemy (`UfoController`) drives its behavior through a small interface-ba
 
 ### Object pooling
 
-Frequently spawned/destroyed objects (bullets, asteroids, UFOs) are recycled through a generic `ObjectPool` keyed by prefab name, using an `IPoolable` interface (`OnSpawnFromPool` / `OnReturnToPool`) so each object can reset its own state. This avoids per-frame `Instantiate`/`Destroy` allocations and GC spikes during combat.
+Frequently spawned/destroyed objects (bullets, asteroids, UFOs) are recycled through a generic `ObjectPool` keyed by prefab instance ID, using an `IPoolable` interface (`OnSpawnFromPool` / `OnReturnToPool`) so each object can reset its own state. This avoids per-frame `Instantiate`/`Destroy` allocations and GC spikes during combat.
 
 ## Core Gameplay Systems
 
@@ -63,10 +63,13 @@ Frequently spawned/destroyed objects (bullets, asteroids, UFOs) are recycled thr
 - **Waves** (`WaveManager`, `WaveConfig`): Spawns asteroids off-screen each wave, with count and speed scaling per wave (split fragments inherit the wave's speed). UFOs spawn on a shrinking timer from a configurable wave onward, picked from weighted variants unlocked by wave number, with faster fire rates in later waves. A wave ends once every asteroid and UFO is destroyed; no new UFOs spawn after the last asteroid, so a wave can always finish. The next wave then starts after a short delay.
 - **Screen wrapping** (`ScreenWrapper`): Static helper called by the player, asteroids, and UFOs to loop objects around the play area.
 - **Extra lives** (`GameManager`): Listens for score-changed events and awards a bonus life every `extraLifeScoreInterval` points (default 10,000), capped at `maxLives`.
-- **Effects** (`EffectSO`, `PooledEffect`): One-shot particles and sounds (explosions, bullet impacts, hyperspace, respawn) are pooled prefabs described by `EffectSO` assets. Configs reference an effect and gameplay code calls `effect.Play(position)`. Each effect picks a random clip and pitch, and caps how many copies of its sound can play at once so chain explosions don't clip.
+- **Effects** (`EffectSO`, `PooledEffect`): One-shot particles and sounds (explosions, hyperspace, respawn) are pooled prefabs described by `EffectSO` assets. Configs reference an effect and gameplay code calls `effect.Play(position)`. Each effect picks a random clip and pitch, and caps how many copies of its sound can play at once so chain explosions don't clip.
 - **Audio mixing & settings** (`AudioSettingsManager`, `SettingsUI`, `MusicPlayer`, `UISoundPlayer`): Every AudioSource routes to the Music or SFX group under Master (UI sounds sit under SFX). The settings screen's sliders and mute toggles drive exposed mixer volumes (converted to decibels) and are saved in `PlayerPrefs`. Pausing sets `AudioListener.pause`, which silences gameplay sound while music and UI sounds keep playing. The music fades in after a short delay and crossfades to a separate pause track while paused.
 - **Hyperspace** (`PlayerHyperspace`): Left Shift or right mouse button makes the ship vanish and reappear at a random on-screen spot, preferring one away from enemies. Re-entry has a configurable chance to destroy the ship, as in the arcade original. Tuning lives in `ShipConfig`.
 - **Wave-clear slow motion & shockwave** (`SlowMotionEffect`, `ShockwaveEffect`): The kill that empties a wave slows the game down (time, physics steps and mixer pitch) and sends a ring of screen distortion out from where the enemy died, using a full-screen shader pass on the 2D Renderer.
+- **Scene transitions & loading screen** (`SceneLoader`, `LoadingShipFlyer`): A persistent loader, placed in every scene as a prefab, fades the screen and all audio to black and back between scenes. Loads of `GameScene` go through a silent `LoadingScene` (the ship, thruster firing, wandering on a different random path each time over a big "LOADING" text), which stays up for the game scene's whole setup. The game scene loads additively underneath it, and once its Awakes have run, `SceneLoader` keeps every root except the camera and the `ObjectPool` switched off while the pool prewarms a few instances per frame (`ObjectPool.IsReady`). When the pool is ready and a minimum time has passed, the screen fades to black, the loading scene is unloaded and the held roots are switched back on, so the game's Start methods, music and intro begin when the player can actually see it. The loading camera is untagged and drawn above the game camera so `Camera.main` still resolves to the game's.
+- **Pre-game intro** (`GameIntro`): The game scene opens with only the ship. A world-space controls hint, drawn under the ship so it can be flown over, fades in and out, and then an `OnGameStarted` event tells `WaveManager` to start wave 1. Hyperspace can't malfunction until then.
+- **Screen shake** (`CameraShake`, `ScreenShakeSettings`): Asteroids (per size), UFOs and the ship each set a shake (strength, duration, frequency) in their config and send it through an event channel when destroyed. Overlapping shakes add up to a cap. It runs on game time, so it slows with the wave-clear slow motion, and it is only applied while the camera renders, so screen wrapping never sees the offset.
 
 ## Requirements
 

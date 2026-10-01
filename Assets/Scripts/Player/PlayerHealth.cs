@@ -16,10 +16,10 @@ namespace Asteroids.Player
 
         [Header("Event Channels")]
         [SerializeField] private VoidEventChannelSO onPlayerDiedChannel;
+        [Tooltip("Sends the ship config's Death Shake to CameraShake.")]
+        [SerializeField] private ScreenShakeEventChannelSO onScreenShakeChannel;
 
-        [Header("Respawn Invincibility")]
-        [SerializeField] private float invincibilityDuration = 2f;
-        [SerializeField] private float blinkInterval = 0.1f;
+        [Header("Visuals")]
         [SerializeField] private SpriteRenderer spriteRenderer;
 
         private bool isInvincible;
@@ -100,6 +100,11 @@ namespace Asteroids.Player
                 shipConfig.DeathEffect.Play(transform.position);
             }
 
+            if (shipConfig != null && shipConfig.DeathShake.IsActive)
+            {
+                onScreenShakeChannel?.RaiseEvent(shipConfig.DeathShake);
+            }
+
             if (onPlayerDiedChannel != null)
             {
                 onPlayerDiedChannel.RaiseEvent();
@@ -132,6 +137,9 @@ namespace Asteroids.Player
         private IEnumerator InvincibilityRoutine()
         {
             isInvincible = true;
+
+            float invincibilityDuration = shipConfig != null ? shipConfig.InvincibilityDuration : 2f;
+            float blinkInterval = Mathf.Max(0.01f, shipConfig != null ? shipConfig.BlinkInterval : 0.1f);
 
             float elapsed = 0f;
             bool blinkVisible = true;
