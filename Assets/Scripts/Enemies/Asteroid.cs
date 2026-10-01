@@ -42,6 +42,10 @@ namespace Asteroids.Enemies
             currentHealth = config != null ? config.Health : 1;
         }
 
+        private void OnEnable() => EnemyTracker.AsteroidEnabled();
+
+        private void OnDisable() => EnemyTracker.AsteroidDisabled();
+
         public void OnSpawnFromPool()
         {
             currentHealth = config != null ? config.Health : 1;

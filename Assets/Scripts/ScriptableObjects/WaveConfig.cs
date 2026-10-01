@@ -59,5 +59,26 @@ namespace Asteroids.ScriptableObjects
         public float WaveIntroDuration => waveIntroDuration;
         public float WaveClearCheckInterval => waveClearCheckInterval;
         public float SpawnEdgePadding => spawnEdgePadding;
+
+        // Waves are numbered from 1. Every ramp below starts at its base value on wave 1.
+        public int AsteroidCountForWave(int wave)
+        {
+            return baseAsteroidCount + asteroidCountIncreasePerWave * (wave - 1);
+        }
+
+        public float AsteroidSpeedMultiplierForWave(int wave)
+        {
+            return Mathf.Min(1f + asteroidSpeedIncreasePerWave * (wave - 1), maxAsteroidSpeedMultiplier);
+        }
+
+        public float UfoSpawnIntervalForWave(int wave)
+        {
+            return Mathf.Max(minUfoSpawnInterval, ufoSpawnIntervalBase - ufoSpawnIntervalDecreasePerWave * (wave - 1));
+        }
+
+        public float UfoFireRateForWave(int wave)
+        {
+            return Mathf.Max(minUfoFireRate, ufoFireRateBase - ufoFireRateDecreasePerWave * (wave - 1));
+        }
     }
 }

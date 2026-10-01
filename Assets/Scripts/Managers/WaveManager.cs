@@ -147,10 +147,8 @@ namespace Asteroids.Managers
 
             if (config != null && asteroidPrefab != null && ObjectPool.Instance != null)
             {
-                int count = config.BaseAsteroidCount + config.AsteroidCountIncreasePerWave * (currentWave - 1);
-                float speedMultiplier = Mathf.Min(
-                    1f + config.AsteroidSpeedIncreasePerWave * (currentWave - 1),
-                    config.MaxAsteroidSpeedMultiplier);
+                int count = config.AsteroidCountForWave(currentWave);
+                float speedMultiplier = config.AsteroidSpeedMultiplierForWave(currentWave);
 
                 for (int i = 0; i < count; i++)
                 {
@@ -175,9 +173,10 @@ namespace Asteroids.Managers
             asteroidSpawnRoutine = null;
         }
 
-        // Polls for live enemies rather than counting spawn/destroy events, so split fragments
+        // Checks EnemyTracker rather than counting spawn/destroy events, so split fragments
         // (spawned outside this manager, by Asteroid itself) are always accounted for correctly
         // without a second bookkeeping path. A wave needs its UFOs cleared too, not just asteroids.
+        // This is a cheap safety net for waves that end without a final kill event.
         private IEnumerator WatchForWaveClear()
         {
             yield return null;
@@ -204,12 +203,12 @@ namespace Asteroids.Managers
 
         private static bool AnyAsteroidsAlive()
         {
-            return FindAnyObjectByType<Asteroid>(FindObjectsInactive.Exclude) != null;
+            return EnemyTracker.AsteroidCount > 0;
         }
 
         private static bool AnyEnemiesAlive()
         {
-            return AnyAsteroidsAlive() || FindAnyObjectByType<UfoController>(FindObjectsInactive.Exclude) != null;
+            return EnemyTracker.TotalCount > 0;
         }
 
         private void RestartUfoTimer()
@@ -224,11 +223,7 @@ namespace Asteroids.Managers
 
             while (true)
             {
-                float interval = Mathf.Max(
-                    config.MinUfoSpawnInterval,
-                    config.UfoSpawnIntervalBase - config.UfoSpawnIntervalDecreasePerWave * (currentWave - 1));
-
-                yield return new WaitForSeconds(interval);
+                yield return new WaitForSeconds(config.UfoSpawnIntervalForWave(currentWave));
 
                 // Once the asteroids are gone the wave is only waiting on its UFOs, so no new ones
                 // join; otherwise a wave could be kept open indefinitely.
@@ -249,10 +244,7 @@ namespace Asteroids.Managers
 
             if (ufo != null && ufo.TryGetComponent<UfoController>(out var controller))
             {
-                float fireRate = Mathf.Max(
-                    config.MinUfoFireRate,
-                    config.UfoFireRateBase - config.UfoFireRateDecreasePerWave * (currentWave - 1));
-                controller.SetFireRate(fireRate);
+                controller.SetFireRate(config.UfoFireRateForWave(currentWave));
             }
         }
 

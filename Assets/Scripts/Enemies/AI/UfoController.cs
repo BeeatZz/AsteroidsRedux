@@ -79,6 +79,10 @@ namespace Asteroids.Enemies.AI
             StateMachine.Initialize(EntryState);
         }
 
+        private void OnEnable() => EnemyTracker.UfoEnabled();
+
+        private void OnDisable() => EnemyTracker.UfoDisabled();
+
         public void OnSpawnFromPool()
         {
             currentHealth = config != null ? config.Health : 1;
