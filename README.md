@@ -37,12 +37,8 @@ It was built as a portfolio piece. The gameplay is deliberately familiar, so the
 
 <table>
   <tr>
-    <td><img src="docs/media/menu.png" alt="Main menu"></td>
-    <td><img src="docs/media/gameplay.png" alt="Gameplay"></td>
-  </tr>
-  <tr>
-    <td><img src="docs/media/split.gif" alt="Asteroids splitting"></td>
-    <td><img src="docs/media/ufo.gif" alt="UFO fight"></td>
+    <td width="50%"><img src="docs/media/mainmenu.gif" alt="Main menu"></td>
+    <td width="50%"><img src="docs/media/gameplay.gif" alt="Gameplay"></td>
   </tr>
 </table>
 
@@ -92,7 +88,7 @@ Cross-system communication (score, lives, player death, pause/resume, game over,
 
 ### 2. Data-driven design (ScriptableObject configs)
 
-<img src="docs/media/config-inspector.png" alt="WaveConfig asset in the Unity inspector" width="640">
+<img src="docs/media/waveasset.png" alt="WaveConfig asset in the Unity inspector" width="640">
 
 Ship handling, weapons, asteroid sizes, UFO stats and the whole difficulty curve live in config assets (`ShipConfig`, `WeaponConfig`, `AsteroidConfig`, `UfoConfigSO`, `WaveConfig`), not on components. Configs even own the behaviour around themselves: `WaveConfig` exposes `AsteroidCountForWave(n)`, `AsteroidSpeedMultiplierForWave(n)`, `UfoSpawnIntervalForWave(n)` and `UfoFireRateForWave(n)`, each clamped to a configurable floor or cap.
 
@@ -102,6 +98,8 @@ Ship handling, weapons, asteroid sizes, UFO stats and the whole difficulty curve
 - **The scaling math is testable.** Because it lives in plain methods on the config, it has unit tests (see [Testing](#testing)).
 
 ### 3. Finite state machine for enemy AI
+
+<img src="docs/media/ufo.gif" alt="UFO flying in, weaving and firing at the player" width="640">
 
 ```mermaid
 stateDiagram-v2
@@ -149,13 +147,10 @@ Every `AudioSource` routes to a Music or SFX group under Master (UI sounds sit u
 
 <table>
   <tr>
-    <td width="50%">
-      <img src="docs/media/slowmo.gif" alt="Wave-clear slow motion, shockwave and screen shake"><br>
+    <td colspan="2">
+      <img src="docs/media/shockwave.gif" alt="Wave-clear slow motion, shockwave and screen shake" width="640"><br>
       <b>Wave-clear slow motion + shockwave</b><br>
-      The kill that empties a wave slows time, physics steps and mixer pitch together, and sends a ring of screen distortion from where the enemy died, using a full-screen shader pass on the 2D Renderer.
-    </td>
-    <td width="50%">
-      <img src="docs/media/death.gif" alt="Ship death with screen shake and respawn"><br>
+      The kill that empties a wave slows time, physics steps and mixer pitch together, and sends a ring of screen distortion from where the enemy died, using a full-screen shader pass on the 2D Renderer.<br><br>
       <b>Screen shake</b><br>
       Asteroids (per size), UFOs and the ship each define a shake (strength, duration, frequency) in their config and raise it through an event channel. Overlapping shakes add up to a cap, run on game time so they slow with the slow motion, and are only applied while the camera renders, so screen wrapping never sees the offset.
     </td>
