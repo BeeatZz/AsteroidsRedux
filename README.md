@@ -228,6 +228,27 @@ Assets/
 
 ## Credits
 
-- Visual and sound assets: [Kenney](https://kenney.nl) (CC0)
-- Some sound effects: [Freesound](https://freesound.org)
-- Built with the help of [Claude Code](https://claude.com/claude-code) for code and documentation
+### Kenney (CC0)
+
+Sprites, UI, cursors, sound effects and music come from [Kenney](https://kenney.nl) packs:
+
+| Pack | Used for |
+| --- | --- |
+| [UI Pack](https://kenney.nl/assets/ui-pack) | Menus, buttons and HUD |
+| [UI Pack - Sci-Fi](https://kenney.nl/assets/ui-pack-sci-fi) | Sci-fi panels and UI elements |
+| [Sci-fi Sounds](https://kenney.nl/assets/sci-fi-sounds) | Gameplay sound effects |
+| [Cursor Pack](https://kenney.nl/assets/cursor-pack) | Mouse cursors |
+| [Music Jingles](https://kenney.nl/assets/music-jingles) | Music |
+
+### Freesound (CC0)
+
+| Sound | Author | Used for |
+| --- | --- | --- |
+| button hover 3 | [avaol](https://freesound.org/people/avaol/) | Button hover |
+| SFX UI Button Click | [suntemple](https://freesound.org/people/suntemple/) | Button click |
+| UFO1.wav | [rockwehrmann](https://freesound.org/people/rockwehrmann/) | UFO engine |
+
+### AI disclosure
+
+- The broken-screen panel shown when the ship is destroyed was created with generative AI using the base Kenney panel.
+- Code and documentation were written with the help of [Claude Code](https://claude.com/claude-code).
