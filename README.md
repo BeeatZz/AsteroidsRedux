@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🚀 Asteroids Redux (README WIP)
+<img src="docs/media/logo.png" alt="Asteroids Redux" width="480">
 
 **A polished 2D Asteroids game in Unity, built as a showcase of clean, decoupled game architecture.**
 
