@@ -41,7 +41,7 @@ It was built as a portfolio piece. The gameplay is deliberately familiar, so the
     <td><img src="docs/media/gameplay.png" alt="Gameplay"></td>
   </tr>
   <tr>
-    <td><img src="docs/media/shockwave.gif" alt="Wave-clear slow motion and shockwave"></td>
+    <td><img src="docs/media/split.gif" alt="Asteroids splitting"></td>
     <td><img src="docs/media/ufo.gif" alt="UFO fight"></td>
   </tr>
 </table>
@@ -150,12 +150,12 @@ Every `AudioSource` routes to a Music or SFX group under Master (UI sounds sit u
 <table>
   <tr>
     <td width="50%">
-      <img src="docs/media/slowmo.gif" alt="Wave-clear slow motion"><br>
+      <img src="docs/media/slowmo.gif" alt="Wave-clear slow motion, shockwave and screen shake"><br>
       <b>Wave-clear slow motion + shockwave</b><br>
       The kill that empties a wave slows time, physics steps and mixer pitch together, and sends a ring of screen distortion from where the enemy died, using a full-screen shader pass on the 2D Renderer.
     </td>
     <td width="50%">
-      <img src="docs/media/shake.gif" alt="Screen shake"><br>
+      <img src="docs/media/death.gif" alt="Ship death with screen shake and respawn"><br>
       <b>Screen shake</b><br>
       Asteroids (per size), UFOs and the ship each define a shake (strength, duration, frequency) in their config and raise it through an event channel. Overlapping shakes add up to a cap, run on game time so they slow with the slow motion, and are only applied while the camera renders, so screen wrapping never sees the offset.
     </td>
